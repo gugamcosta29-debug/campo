@@ -17,6 +17,18 @@ html,body{margin:0;background:var(--fundo);color:var(--texto);font:16px/1.4 -app
 header{position:sticky;top:0;z-index:5;background:var(--barra);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:10px}
 header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header button{background:none;border:0;color:#fff;font-size:16px;padding:6px 4px}
+#menu-bt{font-size:24px;line-height:1;padding:4px 6px}
+#veu{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30}
+#menu{position:fixed;top:0;right:0;bottom:0;width:min(82vw,320px);background:var(--cartao);z-index:31;transform:translateX(100%);transition:transform .2s ease;padding:calc(env(safe-area-inset-top) + 14px) 0 calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column}
+#menu.aberto{transform:none;box-shadow:-8px 0 24px rgba(0,0,0,.15)}
+[hidden]{display:none!important}
+#menu .quem{padding:4px 20px 14px;border-bottom:1px solid var(--linha);margin-bottom:6px}#menu .quem b{display:block;font-size:17px}#menu .quem small{color:var(--suave)}
+#menu button{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;text-align:left;font:500 16px inherit;color:var(--texto);padding:14px 20px}
+#menu button.atual{background:var(--fundo);font-weight:700;box-shadow:inset 3px 0 0 var(--destaque)}
+#menu button i{font-style:normal;width:22px;text-align:center}#menu button span{flex:1}
+#menu .cont{font-style:normal;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--fundo);color:var(--suave)}#menu .cont.alerta{background:#f6dcdb;color:var(--erro)}
+#menu .rod{margin-top:auto;padding:14px 20px 0;font-size:12px;color:var(--suave);border-top:1px solid var(--linha)}
+@media (prefers-reduced-motion: reduce){#menu{transition:none}}
 main{padding:14px 16px calc(env(safe-area-inset-bottom) + 100px);max-width:720px;margin:0 auto}
 html{scroll-padding-bottom:calc(env(safe-area-inset-bottom) + 110px);scroll-padding-top:70px}
 main input,main button,main textarea,main select{scroll-margin-bottom:calc(env(safe-area-inset-bottom) + 110px)}
@@ -51,6 +63,9 @@ input.destoa{border:2px solid var(--erro);background:#fdeceb}input.alerta{border
 .pad input[type=checkbox]{width:22px;height:22px;margin-top:2px;flex:none}
 .venc{color:var(--erro);font-weight:600}.vence{color:var(--aviso);font-weight:600}.val{color:var(--ok)}
 .seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--texto);border-radius:10px;overflow:hidden}.seg button{font:700 17px inherit;padding:12px;border:0;background:#fff;color:var(--texto)}.seg button.on{background:var(--texto);color:#fff}
+.padsel{border:1px solid var(--linha);border-radius:10px;padding:10px;margin:0 0 10px;background:#fafaf8}.padsel .top{display:flex;gap:8px;align-items:baseline;margin-bottom:4px}.padsel .top span{flex:1;font-size:14px}
+.tabpesos{margin-top:8px}.tabpesos summary{font-size:14px;font-weight:600;cursor:pointer;padding:4px 0}.resumo th{font-size:12px;color:var(--suave);text-align:right;padding:4px 6px}.resumo td{text-align:right}
+.msg.info{color:var(--texto);background:#eef3f8;border-radius:6px;padding:5px 8px;font-variant-numeric:tabular-nums}
 .vazio{color:var(--suave);text-align:center;padding:30px 10px}
 .faixa{font-size:13px;color:var(--suave);margin:-4px 0 12px}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
@@ -60,7 +75,9 @@ video{width:100%;border-radius:10px;background:#000}
 </style>
 </head>
 <body>
-<header><button id="voltar" hidden>‹ Voltar</button><h1 id="titulo">Calibração em campo</h1><button id="perfil-bt">Perfil</button></header>
+<header><button id="voltar" hidden aria-label="Voltar">‹ Voltar</button><h1 id="titulo">Calibração em campo</h1><button id="menu-bt" aria-label="Menu" aria-expanded="false">☰</button></header>
+<div id="veu" hidden></div>
+<nav id="menu" aria-label="Menu principal"></nav>
 <main id="tela"></main>
 <div class="rodape" id="rodape" hidden></div>
 <div class="toast" id="toast"></div>
@@ -104,7 +121,28 @@ let rota = { tela: 'inicio' };
 function ir(r) { rota = r; history.pushState(r, ''); desenha(); window.scrollTo(0, 0); }
 window.onpopstate = e => { rota = e.state || { tela: 'inicio' }; desenha(); };
 $('#voltar').onclick = () => history.back();
-$('#perfil-bt').onclick = () => ir({ tela: 'perfil' });
+// ---------- menu ----------
+function alertasPadroes() { return db.perfil.padroes.filter(x => (situacaoPadrao(x).nivel || 0) > 0).length; }
+function abreMenu(abrir) {
+  const m = $('#menu');
+  if (abrir) {
+    const pend = db.visitas.flatMap(v => v.instrumentos).filter(i => i.situacao === 'pendente' || i.situacao === 'andamento').length;
+    const al = alertasPadroes(), atual = rota.tela;
+    const item = (tela, ic, txt, cont, cls) => `<button data-ir="${tela}" class="${atual === tela ? 'atual' : ''}"><i>${ic}</i><span>${txt}</span>${cont != null ? `<em class="cont ${cls || ''}">${cont}</em>` : ''}</button>`;
+    m.innerHTML = `<div class="quem"><b>${esc(db.perfil.nome || 'Técnico sem nome')}</b><small>${db.visitas.length} visita(s) no celular</small></div>
+      ${item('inicio', '⌂', 'Visitas', db.visitas.length)}
+      ${item('instrumentos', '⚖', 'Instrumentos', pend ? pend + ' a fazer' : null)}
+      ${item('padroes', '◎', 'Padrões', al ? al + ' alerta(s)' : db.perfil.padroes.length, al ? 'alerta' : '')}
+      ${item('ler', '▣', 'Receber ordem do PCP')}
+      ${item('novaVisita', '+', 'Nova visita')}
+      ${item('perfil', '☺', 'Meu perfil')}
+      <div class="rod">Os dados ficam só neste celular até você enviar a visita ao laboratório.</div>`;
+    m.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => { abreMenu(false); if (b.dataset.ir !== rota.tela) ir({ tela: b.dataset.ir }); });
+  }
+  m.classList.toggle('aberto', abrir); $('#veu').hidden = !abrir; $('#menu-bt').setAttribute('aria-expanded', abrir);
+}
+$('#menu-bt').onclick = () => abreMenu(!$('#menu').classList.contains('aberto'));
+$('#veu').onclick = () => abreMenu(false);
 
 function visita(id) { return db.visitas.find(v => v.id === id); }
 function rodape(botoes) {
@@ -116,9 +154,9 @@ function rodape(botoes) {
 
 function desenha() {
   $('#voltar').hidden = rota.tela === 'inicio';
-  $('#perfil-bt').hidden = rota.tela !== 'inicio';
   const t = $('#tela'); t.oninput = t.onchange = t.onclick = null;
-  ({ inicio: telaInicio, perfil: telaPerfil, visita: telaVisita, instrumento: telaInstrumento, ler: telaLer, novaVisita: telaNovaVisita })[rota.tela]();
+  abreMenu(false);
+  ({ inicio: telaInicio, instrumentos: telaInstrumentos, padroes: telaPadroes, perfil: telaPerfil, visita: telaVisita, instrumento: telaInstrumento, ler: telaLer, novaVisita: telaNovaVisita })[rota.tela]();
 }
 
 // ---------- início ----------
@@ -153,28 +191,55 @@ function telaPerfil() {
       <label class="cp"><span>Nome completo (vai em "Técnico Executante")</span><input id="p-nome" value="${esc(p.nome)}" autocomplete="name"></label>
       <label class="cp"><span>Como assina como digitador</span><input id="p-apelido" value="${esc(p.apelido)}" placeholder="ex.: Eduardo"></label>
     </div>
-    <div class="cartao"><h2>Padrões do meu kit</h2><p class="faixa">Marque os que você leva para o campo. Eles já vêm marcados em cada calibração. A lista chega junto com a primeira ordem do PCP.</p>
-      <div id="p-pads">${p.padroes.map((x, i) => { const s = situacaoPadrao(x); return `<label class="pad"><input type="checkbox" data-cod="${esc(x.codigo)}" ${p.kit.includes(x.codigo) ? 'checked' : ''}><span><b>${esc(x.codigo)}</b> ${esc(x.descricao)}<br><small>Cert. ${esc(x.certificado)} · ${esc(x.organismo)}</small><br><small class="${s.cls}">${s.txt}</small></span></label>`; }).join('')}</div>
-    </div>
+    <div class="cartao"><h2>Meu kit de padrões</h2><p class="faixa" style="margin:0 0 10px">${p.kit.length ? p.kit.map(esc).join(', ') : 'Nenhum marcado ainda.'}</p><button class="mini" id="ir-padroes">Escolher padrões</button></div>`;
+  const guarda = () => { p.nome = $('#p-nome').value.trim(); p.apelido = $('#p-apelido').value.trim(); salvar(); };
+  $('#tela').oninput = $('#tela').onchange = guarda;
+  $('#ir-padroes').onclick = () => ir({ tela: 'padroes' });
+  rodape([['Pronto', () => history.back()]]);
+}
+
+// ---------- instrumentos de todas as visitas ----------
+function telaInstrumentos() {
+  $('#titulo').textContent = 'Instrumentos';
+  const todos = db.visitas.flatMap(v => v.instrumentos.map((i, k) => ({ v, i, k })));
+  const grupos = [['andamento', 'Em andamento'], ['pendente', 'A fazer'], ['pronto', 'Prontos'], ['nao_calibrado', 'Não calibrados']];
+  $('#tela').innerHTML = todos.length ? grupos.map(([sit, tit]) => {
+    const g = todos.filter(x => x.i.situacao === sit); if (!g.length) return '';
+    return `<div class="cartao"><h2>${tit} (${g.length})</h2>${g.map(({ v, i, k }) => { const cd = i.cadastro; const [c, t] = SIT[i.situacao]; return `<div class="item" data-v="${v.id}" data-k="${k}"><div class="txt"><b>${esc(cd.n_metrologico || 'Sem tag')}</b><small>${esc(v.cliente.nome || '')} · ${esc([cd.instrumento, cd.fabricante, cd.modelo].filter(Boolean).join(' · '))}</small></div><span class="selo ${c}">${t}</span></div>`; }).join('')}</div>`;
+  }).join('') : '<div class="cartao"><div class="vazio">Nenhum instrumento. Receba uma ordem do PCP.</div></div>';
+  document.querySelectorAll('.item[data-v]').forEach(el => el.onclick = () => ir({ tela: 'instrumento', id: el.dataset.v, k: +el.dataset.k, passo: 0 }));
+  rodape(null);
+}
+
+// ---------- padrões ----------
+function telaPadroes() {
+  $('#titulo').textContent = 'Padrões';
+  const p = db.perfil;
+  const ordem = p.padroes.slice().sort((a, b) => (situacaoPadrao(b).nivel || 0) - (situacaoPadrao(a).nivel || 0) || a.codigo.localeCompare(b.codigo));
+  const cartao = x => {
+    const s = situacaoPadrao(x), noKit = p.kit.includes(x.codigo);
+    const tab = x.pesos ? `<details class="tabpesos"><summary>${Object.keys(x.pesos).length} pesos no certificado (${esc(x.unidade_pesos || '')})</summary><table class="resumo"><tr><th>Nominal</th><th>VC</th><th>uest</th><th>upad</th></tr>${Object.entries(x.pesos).map(([n, t]) => `<tr><td>${fmtN(n)}</td><td>${fmtN(t.vc)}</td><td>${fmtN(t.uest)}</td><td>${fmtN(t.upad)}</td></tr>`).join('')}</table></details>` : '';
+    return `<div class="padsel"><div class="top"><b>${esc(x.codigo)}</b><span>${esc(x.descricao)}</span></div>
+      <small>Cert. ${esc(x.certificado)} · ${esc(x.organismo)}</small><br><small class="${s.cls}">${s.txt}</small>${tab}
+      <label class="pad" style="border:0;padding:8px 0 0"><input type="checkbox" data-kit="${esc(x.codigo)}" ${noKit ? 'checked' : ''}><span>No meu kit (vem marcado em cada calibração)</span></label></div>`;
+  };
+  $('#tela').innerHTML = `
+    ${ordem.length ? `<div class="cartao"><h2>No celular (${ordem.length})</h2>${ordem.map(cartao).join('')}</div>` : '<div class="cartao"><div class="vazio">Nenhum padrão ainda. Eles chegam com a ordem do PCP.</div></div>'}
     <div class="cartao"><h2>Cadastrar outro padrão</h2>
       <div class="grade2"><label class="cp"><span>Código</span><input id="n-cod" placeholder="CPP-011"></label><label class="cp"><span>Validade</span><input id="n-val" placeholder="31/03/2027" inputmode="numeric"></label></div>
       <label class="cp"><span>Descrição</span><input id="n-desc" placeholder="JOGO DE PESOS PADRÃO - F1"></label>
       <div class="grade2"><label class="cp"><span>Certificado</span><input id="n-cert"></label><label class="cp"><span>Organismo</span><input id="n-org"></label></div>
       <button class="mini" id="n-add">Adicionar padrão</button>
     </div>`;
-  const guarda = () => {
-    p.nome = $('#p-nome').value.trim(); p.apelido = $('#p-apelido').value.trim();
-    p.kit = [...document.querySelectorAll('#p-pads input:checked')].map(i => i.dataset.cod); salvar();
-  };
-  $('#tela').oninput = $('#tela').onchange = guarda;
+  $('#tela').onchange = e => { const c = e.target.dataset.kit; if (!c) return; p.kit = e.target.checked ? [...new Set([...p.kit, c])] : p.kit.filter(x => x !== c); salvar(); toast(e.target.checked ? `${c} no kit` : `${c} fora do kit`); };
+  rodape(null);
   $('#n-add').onclick = () => {
     const cod = $('#n-cod').value.trim().toUpperCase(); if (!cod) return toast('Informe o código');
     if (!/^\d{2}\/\d{2}\/\d{4}$/.test($('#n-val').value.trim())) return toast('Validade no formato dd/mm/aaaa');
     p.padroes = p.padroes.filter(x => x.codigo !== cod);
     p.padroes.push({ codigo: cod, descricao: $('#n-desc').value.trim().toUpperCase(), certificado: $('#n-cert').value.trim(), validade: $('#n-val').value.trim(), organismo: $('#n-org').value.trim().toUpperCase() });
-    if (!p.kit.includes(cod)) p.kit.push(cod); salvar(); telaPerfil(); toast('Padrão cadastrado');
+    if (!p.kit.includes(cod)) p.kit.push(cod); salvar(); telaPadroes(); toast('Padrão cadastrado');
   };
-  rodape([['Pronto', () => history.back()]]);
 }
 
 // ---------- ordem do PCP ----------
@@ -294,7 +359,7 @@ function telaInstrumento() {
   } else if (p === 2) {
     if (!cp.pontos.length) cp.pontos = [novoPonto()];
     const rt = cp.ref_tipo || 'VN';
-    h = `<div class="cartao"><h2>Referência anotada</h2><div class="seg">${['VN', 'VC'].map(t => `<button data-reftipo="${t}" class="${rt === t ? 'on' : ''}">${t}</button>`).join('')}</div><p class="faixa" style="margin:8px 0 0">${rt === 'VN' ? 'Valor nominal. O VC sai da tabela de pesos no laboratório.' : 'Valor convencional do certificado do peso.'}</p></div>
+    h = `<div class="cartao"><h2>Referência anotada</h2><div class="seg">${['VN', 'VC'].map(t => `<button data-reftipo="${t}" class="${rt === t ? 'on' : ''}">${t}</button>`).join('')}</div><p class="faixa" style="margin:8px 0 0">${rt === 'VN' ? 'Valor nominal. O VC e as incertezas vêm da tabela do jogo de pesos marcado no início.' : 'Valor convencional do certificado do peso.'}</p></div>
       <p class="faixa">Unidade: ${esc(un)} · divisão ${esc(cd.divisao || '?')}. VM antes e depois do ajuste; as repetições M2 a M5 só se forem medidas. "= VM" repete a leitura.</p>
       <div id="pontos">${cp.pontos.map((pt, i) => pontoHTML(pt, i, cd, rt)).join('')}</div>
       <button class="mini" id="add-pt" ${cp.pontos.length >= 10 ? 'disabled' : ''}>+ Ponto (${cp.pontos.length}/10)</button>`;
@@ -302,7 +367,8 @@ function telaInstrumento() {
     const e = cp.excentricidade;
     const pos = (lado, n) => `<div><small>${n}</small><input class="med" inputmode="decimal" data-exc="${lado}" data-i="${n - 1}" value="${fmt(e[lado][n - 1])}"></div>`;
     const plat = lado => `<div class="plat">${pos(lado, 2)}<div></div>${pos(lado, 5)}<div></div>${pos(lado, 1)}<div></div>${pos(lado, 3)}<div></div>${pos(lado, 4)}</div>`;
-    h = `<div class="cartao"><h2>Carga usada</h2><label class="cp"><span>VC da carga de excentricidade (${esc(un)})</span><input class="med" inputmode="decimal" data-excvc value="${fmt(e.vc)}"></label></div>
+    const rte = cp.ref_tipo || 'VN';
+    h = `<div class="cartao"><h2>Carga usada</h2><label class="cp"><span>${rte} da carga de excentricidade (${esc(un)})</span><input class="med" inputmode="decimal" data-excvc value="${fmt(rte === 'VC' ? e.vc : e.nominal)}"></label><div class="msg" id="exc-peso"></div></div>
       <div class="cartao"><h2>Antes do ajuste</h2>${plat('antes')}<button class="mini" data-igual="antes" style="margin-top:8px">Todas = posição 1</button></div>
       <div class="cartao"><h2>Depois do ajuste</h2>${plat('depois')}<button class="mini" data-igual="depois" style="margin-top:8px">Todas = posição 1</button><div class="msg" id="exc-msg"></div></div>`;
   } else {
@@ -321,10 +387,31 @@ function telaInstrumento() {
   rodape([ant, prox].filter(Boolean));
 }
 function amb(k, r, cp) { return `<label class="cp"><span>${r}</span><input class="med" inputmode="decimal" data-campo-num="${k}" value="${fmt(cp[k])}"></label>`; }
+function fmtN(v) { return v == null ? '' : (+v).toFixed(8).replace(/0+$/, '').replace(/\.$/, '').replace('.', ','); }
 function padroesHTML(cp) {
   const lista = db.perfil.padroes;
-  return lista.map(x => { const s = situacaoPadrao(x, cp.data_calibracao); return `<label class="pad"><input type="checkbox" data-pad="${esc(x.codigo)}" ${cp.padroes_usados.includes(x.codigo) ? 'checked' : ''}><span><b>${esc(x.codigo)}</b> ${esc(x.descricao)}<br><small class="${s.cls}">${s.txt}</small></span></label>`; }).join('') || '<div class="vazio">Cadastre padrões no seu perfil.</div>';
+  if (!lista.length) return '<div class="vazio">Nenhum padrão no celular. Eles chegam com a ordem do PCP.</div>';
+  const usados = lista.filter(x => cp.padroes_usados.includes(x.codigo)), outros = lista.filter(x => !cp.padroes_usados.includes(x.codigo));
+  const cartao = x => {
+    const s = situacaoPadrao(x, cp.data_calibracao);
+    const tab = x.pesos ? `<details class="tabpesos"><summary>${Object.keys(x.pesos).length} pesos no certificado (${esc(x.unidade_pesos || '')})</summary><table class="resumo"><tr><th>Nominal</th><th>VC</th><th>uest</th><th>upad</th></tr>${Object.entries(x.pesos).map(([n, t]) => `<tr><td>${fmtN(n)}</td><td>${fmtN(t.vc)}</td><td>${fmtN(t.uest)}</td><td>${fmtN(t.upad)}</td></tr>`).join('')}</table></details>` : '';
+    return `<div class="padsel"><div class="top"><b>${esc(x.codigo)}</b><span>${esc(x.descricao)}</span><button class="mini" data-tirar="${esc(x.codigo)}">Tirar</button></div>
+      <small>Cert. ${esc(x.certificado)} · ${esc(x.organismo)}</small><br><small class="${s.cls}">${s.txt}</small>${tab}</div>`;
+  };
+  return (usados.map(cartao).join('') || '<div class="msg erro" style="margin:0 0 10px">Nenhum padrão marcado.</div>') +
+    (outros.length ? `<select data-addpad><option value="">+ Adicionar padrão…</option>${outros.map(x => `<option value="${esc(x.codigo)}">${esc(x.codigo)} · ${esc(x.descricao)}</option>`).join('')}</select>` : '');
 }
+// procura o peso nos padrões marcados: pelo nominal exato ou pelo VC (±0,1 %), só na mesma unidade da balança
+function pesoDoPadrao(cp, cd, valor) {
+  if (valor == null) return null;
+  const un = cd.unidade || 'g';
+  const jogos = db.perfil.padroes.filter(x => cp.padroes_usados.includes(x.codigo) && x.pesos && (!x.unidade_pesos || x.unidade_pesos === un));
+  for (const x of jogos) for (const [n, t] of Object.entries(x.pesos)) if (Math.abs(+n - valor) < 1e-9) return { codigo: x.codigo, nominal: +n, ...t };
+  for (const x of jogos) for (const [n, t] of Object.entries(x.pesos)) if (Math.abs(t.vc - valor) <= 0.001 * Math.abs(t.vc)) return { codigo: x.codigo, nominal: +n, ...t };
+  return null;
+}
+function temJogoDePesos(cp, cd) { const un = cd.unidade || 'g'; return db.perfil.padroes.some(x => cp.padroes_usados.includes(x.codigo) && x.pesos && (!x.unidade_pesos || x.unidade_pesos === un)); }
+function linhaPeso(t, un) { return `${t.codigo} · peso ${fmtN(t.nominal)} ${un}: VC ${fmtN(t.vc)} · uest ${fmtN(t.uest)} · upad ${fmtN(t.upad)}`; }
 function novoPonto() { return { nominal: null, vc: null, m1_antes: null, depois: [null, null, null, null, null] }; }
 function pontoHTML(pt, i, cd, rt) {
   const inp = (attr, v, cls = '') => `<input class="med ${cls}" inputmode="decimal" ${attr} value="${fmt(v)}">`;
@@ -336,7 +423,7 @@ function pontoHTML(pt, i, cd, rt) {
 }
 
 // avaliação de um ponto, na hora
-function avaliaPonto(pt, i, pts, cd) {
+function avaliaPonto(pt, i, pts, cd, cp) {
   const div = divisaoNum(cd.divisao) || 0; const casas = casasDe(cd.divisao) ?? 4;
   const lidas = pt.depois.filter(x => x != null);
   const out = { destoa: [], msgs: [] };
@@ -345,10 +432,14 @@ function avaliaPonto(pt, i, pts, cd) {
     pt.depois.forEach((x, j) => { if (x != null && div && Math.abs(x - med) > 5 * div) out.destoa.push(j); });
     if (out.destoa.length) out.msgs.push(['erro', `Leitura ${out.destoa.map(j => 'M' + (j + 1)).join(', ')} destoa das outras. Confira a leitura.`]);
   }
-  const ref = pt.vc ?? pt.nominal;
+  const un = esc(cd.unidade || 'g');
+  const tab = cp ? pesoDoPadrao(cp, cd, pt.vc ?? pt.nominal) : null;
+  if (tab) out.msgs.push(['info', linhaPeso(tab, un)]);
+  else if (cp && (pt.vc ?? pt.nominal) != null) out.msgs.push(['aviso', temJogoDePesos(cp, cd) ? 'Peso não encontrado no certificado dos padrões marcados: o laboratório completa VC e incertezas.' : 'Nenhum jogo de pesos marcado na tela de início: VC e incertezas ficam para o laboratório.']);
+  const ref = pt.vc ?? tab?.vc ?? pt.nominal;
   if (ref != null && lidas.length) {
     const m = lidas.reduce((s, x) => s + x, 0) / lidas.length, ei = m - ref;
-    out.msgs.push([div && Math.abs(ei) > 10 * div ? 'aviso' : 'ok', `Média ${fmt(m, casas)} · erro ${ei >= 0 ? '+' : ''}${fmt(ei, casas)} ${esc(cd.unidade || 'g')}${pt.vc == null ? ' (sobre o nominal)' : ''}`]);
+    out.msgs.push([div && Math.abs(ei) > 10 * div ? 'aviso' : 'ok', `Média ${fmt(m, casas)} · erro ${ei >= 0 ? '+' : ''}${fmt(ei, casas)} ${un}${pt.vc == null && !tab ? ' (sobre o nominal)' : ''}`]);
   }
   const ant = i > 0 ? (pts[i - 1].vc ?? pts[i - 1].nominal) : null;
   if (ref != null && ant != null && ref <= ant) out.msgs.push(['aviso', 'Carga menor ou igual ao ponto anterior: deve ser crescente.']);
@@ -358,7 +449,7 @@ function avaliaPonto(pt, i, pts, cd) {
 function atualizaPontos(inst) {
   const pts = inst.campo.pontos;
   pts.forEach((pt, i) => {
-    const a = avaliaPonto(pt, i, pts, inst.cadastro);
+    const a = avaliaPonto(pt, i, pts, inst.cadastro, inst.campo);
     document.querySelectorAll(`[data-pt="${i}"][data-dep]`).forEach(el => el.classList.toggle('destoa', a.destoa.includes(+el.dataset.dep)));
     const m = document.querySelector(`[data-msg="${i}"]`); if (m) m.innerHTML = a.msgs.map(([c, t]) => `<div class="msg ${c}">${t}</div>`).join('');
   });
@@ -371,11 +462,12 @@ function ligaInstrumento(v, inst, p) {
     if (d.cad) cd[d.cad] = t.value.trim();
     else if (d.campo) cp[d.campo] = t.value;
     else if (d.campoNum) cp[d.campoNum] = num(t.value);
+    else if ('addpad' in d) { if (t.value && !cp.padroes_usados.includes(t.value)) cp.padroes_usados.push(t.value); salvar(); return telaInstrumento(); }
     else if (d.pad) { cp.padroes_usados = [...document.querySelectorAll('[data-pad]:checked')].map(i => i.dataset.pad); }
     else if (d.pt != null && d.k) cp.pontos[+d.pt][d.k] = num(t.value);
     else if (d.pt != null && d.dep != null) cp.pontos[+d.pt].depois[+d.dep] = num(t.value);
     else if (d.exc) cp.excentricidade[d.exc][+d.i] = num(t.value);
-    else if ('excvc' in d) cp.excentricidade.vc = num(t.value);
+    else if ('excvc' in d) { const k = (cp.ref_tipo || 'VN') === 'VC' ? 'vc' : 'nominal'; cp.excentricidade[k] = num(t.value); cp.excentricidade[k === 'vc' ? 'nominal' : 'vc'] = null; }
     salvar();
     if (p === 2) atualizaPontos(inst);
     if (p === 3) atualizaExc(inst);
@@ -384,6 +476,7 @@ function ligaInstrumento(v, inst, p) {
   tela.onclick = e => {
     const d = e.target.dataset;
     if (d.reftipo && d.reftipo !== (cp.ref_tipo || 'VN')) { const para = d.reftipo === 'VC' ? 'vc' : 'nominal', de = para === 'vc' ? 'nominal' : 'vc'; cp.pontos.forEach(pt => { if (pt[para] == null) pt[para] = pt[de]; pt[de] = null; }); cp.ref_tipo = d.reftipo; salvar(); return telaInstrumento(); }
+    if (d.tirar) { cp.padroes_usados = cp.padroes_usados.filter(c => c !== d.tirar); salvar(); return telaInstrumento(); }
     if (e.target.id === 'nao-cal') { const m = prompt('Motivo (vai para as observações):'); if (m) { inst.situacao = 'nao_calibrado'; cp.observacoes = m; salvar(); history.back(); } }
     if (e.target.id === 'add-pt') { const ult = cp.pontos[cp.pontos.length - 1]; cp.pontos.push(novoPonto()); salvar(); telaInstrumento(); const ins = document.querySelectorAll(`[data-pt="${cp.pontos.length - 1}"][data-k="nominal"]`)[0]; ins && ins.focus(); }
     if (d.igualPt != null) { const pt = cp.pontos[+d.igualPt]; const b = pt.depois[0] ?? pt.m1_antes; if (b == null) return toast('Digite M1 primeiro'); pt.depois = pt.depois.map(x => x ?? b); salvar(); telaInstrumento(); }
@@ -396,6 +489,8 @@ function ligaInstrumento(v, inst, p) {
 }
 function atualizaExc(inst) {
   const e = inst.campo.excentricidade, cd = inst.cadastro, casas = casasDe(cd.divisao) ?? 4, m = $('#exc-msg'); if (!m) return;
+  const ep = $('#exc-peso'), carga = e.vc ?? e.nominal, t = pesoDoPadrao(inst.campo, cd, carga);
+  if (ep) { ep.className = 'msg ' + (t ? 'info' : carga != null ? 'aviso' : ''); ep.textContent = t ? linhaPeso(t, cd.unidade || 'g') : carga != null ? 'Peso não encontrado nos padrões marcados.' : ''; }
   const d = e.depois.filter(x => x != null);
   if (d.length < 5) { m.className = 'msg aviso'; m.textContent = `${5 - d.length} posição(ões) faltando.`; return; }
   const dif = Math.max(...d) - Math.min(...d);
@@ -418,7 +513,7 @@ function conferencia(inst) {
   const pts = cp.pontos.filter(pt => pt.depois.some(x => x != null));
   if (!pts.length) add('erro', 'Nenhum ponto de carga medido.');
   else {
-    let problemas = 0; pts.forEach((pt, i) => { const a = avaliaPonto(pt, i, pts, cd); const n = pt.depois.filter(x => x != null).length; if (a.destoa.length || (n > 1 && n < 5)) problemas++; });
+    let problemas = 0; pts.forEach((pt, i) => { const a = avaliaPonto(pt, i, pts, cd, cp); const n = pt.depois.filter(x => x != null).length; if (a.destoa.length || (n > 1 && n < 5)) problemas++; });
     problemas ? add('aviso', `${problemas} ponto(s) com leitura destoante ou repetições pela metade.`) : add('ok', `${pts.length} ponto(s) medidos.`);
     const soVM = pts.filter(pt => pt.depois.filter(x => x != null).length === 1).length; if (soVM) add('aviso', `${soVM} ponto(s) só com VM, sem as repetições M2 a M5.`);
     const semVC = pts.filter(pt => pt.vc == null).length; if (semVC) add('aviso', `${semVC} ponto(s) sem VC: o laboratório completa.`);
@@ -436,7 +531,7 @@ async function enviar(v) {
   const pacote = {
     versao: 1, visita_id: v.id, os: v.os, enviado: agoraISO(), cliente: v.cliente,
     tecnico: { nome: db.perfil.nome, apelido: db.perfil.apelido, padroes: db.perfil.padroes },
-    instrumentos: v.instrumentos.map(i => ({ tipo: i.tipo, situacao: i.situacao, cadastro: Object.assign({ os: v.os }, i.cadastro), campo: i.campo }))
+    instrumentos: v.instrumentos.map(i => { const campo = JSON.parse(JSON.stringify(i.campo)); campo.pontos.forEach(pt => { const t = pesoDoPadrao(i.campo, i.cadastro, pt.vc ?? pt.nominal); if (t) pt.padrao_peso = t; }); const te = pesoDoPadrao(i.campo, i.cadastro, campo.excentricidade.vc ?? campo.excentricidade.nominal); if (te) campo.excentricidade.padrao_peso = te; return { tipo: i.tipo, situacao: i.situacao, cadastro: Object.assign({ os: v.os }, i.cadastro), campo }; })
   };
   const nome = `visita ${(v.cliente.nome || 'cliente').replace(/[\\/:*?"<>|]/g, '-').slice(0, 40)} ${dataBR(v.criada).replace(/\//g, '-')}.json`;
   const arq = new File([JSON.stringify(pacote, null, 1)], nome, { type: 'application/json' });
