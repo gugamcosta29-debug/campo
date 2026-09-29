@@ -249,10 +249,19 @@ function importarOrdem(txt) {
     try { o = JSON.parse(decodeURIComponent(escape(atob(txt.replace(/-/g, '+').replace(/_/g, '/'))))); } catch (e2) { toast('Código não reconhecido'); return false; }
   }
   if (!o || !o.instrumentos) { toast('Isso não é uma ordem do PCP'); return false; }
+  // padrões (com a tabela de pesos) sempre atualizam, mesmo se a ordem já estiver no celular
+  if (Array.isArray(o.padroes)) { for (const x of o.padroes) { db.perfil.padroes = db.perfil.padroes.filter(y => y.codigo !== x.codigo); db.perfil.padroes.push(x); } db.perfil.padroes.sort((a, b) => a.codigo.localeCompare(b.codigo)); salvar(); }
   if (db.visitas.some(v => v.id === o.visita_id)) { toast('Essa ordem já está no celular'); ir({ tela: 'visita', id: o.visita_id }); return true; }
-  if (Array.isArray(o.padroes)) { for (const x of o.padroes) { db.perfil.padroes = db.perfil.padroes.filter(y => y.codigo !== x.codigo); db.perfil.padroes.push(x); } db.perfil.padroes.sort((a, b) => a.codigo.localeCompare(b.codigo)); }
+  // ordem nova da mesma OS cancela a anterior; se a anterior já tem medição, pergunta antes
+  let substituida = false;
+  const antiga = o.os ? db.visitas.find(v => v.origem === 'pcp' && v.os === o.os && !v.enviada) : null;
+  if (antiga) {
+    const medida = antiga.instrumentos.some(i => i.situacao !== 'pendente');
+    if (medida && !confirm(`A OS ${o.os} já está no celular e tem medições. Trocar pela ordem nova? As medições da anterior serão apagadas.`)) { toast('Ordem nova recebida ao lado da anterior'); }
+    else { db.visitas = db.visitas.filter(v => v !== antiga); substituida = true; }
+  }
   const v = { id: o.visita_id || uid(), origem: 'pcp', criada: agoraISO(), os: o.os || '', cliente: o.cliente || {}, instrumentos: o.instrumentos.map(i => { const n = novoInstrumento(i.tipo || 'balanca', i.cadastro || {}); if (Array.isArray(i.padroes_usados) && i.padroes_usados.length) n.campo.padroes_usados = [...i.padroes_usados]; return n; }) };
-  db.visitas.push(v); salvar(); toast('Ordem recebida'); history.replaceState({ tela: 'inicio' }, ''); ir({ tela: 'visita', id: v.id }); return true;
+  db.visitas.push(v); salvar(); toast(substituida ? 'Ordem anterior cancelada, nova recebida' : 'Ordem recebida'); history.replaceState({ tela: 'inicio' }, ''); ir({ tela: 'visita', id: v.id }); return true;
 }
 function novoInstrumento(tipo, cad) {
   return { uid: uid(), tipo, cadastro: cad, situacao: 'pendente', campo: { pontos: [], excentricidade: { antes: [], depois: [] }, padroes_usados: [...db.perfil.kit] } };
