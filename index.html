@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2328">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Campo">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icone-180.png">
+<title>Calibração em campo</title>
+<style>
+:root{--fundo:#f4f4f2;--cartao:#fff;--texto:#1f2328;--suave:#5f6368;--linha:#d9d9d6;--destaque:#c9302c;--ok:#1e7a3c;--aviso:#b7791f;--erro:#c9302c;--campo:#fffdf0;--barra:#1f2328}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--fundo);color:var(--texto);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--barra);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:10px}
+header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header button{background:none;border:0;color:#fff;font-size:16px;padding:6px 4px}
+main{padding:14px 16px calc(env(safe-area-inset-bottom) + 100px);max-width:720px;margin:0 auto}
+html{scroll-padding-bottom:calc(env(safe-area-inset-bottom) + 110px);scroll-padding-top:70px}
+main input,main button,main textarea,main select{scroll-margin-bottom:calc(env(safe-area-inset-bottom) + 110px)}
+.cartao{background:var(--cartao);border:1px solid var(--linha);border-radius:12px;padding:14px;margin:0 0 12px}
+.cartao h2{font-size:15px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave)}
+.item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--linha)}
+.item:first-of-type{border-top:0}
+.item .txt{flex:1;min-width:0}.item .txt b{display:block}.item .txt small{color:var(--suave)}
+.selo{font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.s-pendente{background:#eceae4;color:var(--suave)}.s-andamento{background:#fdf1dc;color:var(--aviso)}.s-pronto{background:#e0f1e6;color:var(--ok)}.s-nao{background:#f6dcdb;color:var(--erro)}
+label.cp{display:block;margin:0 0 10px}label.cp span{display:block;font-size:13px;color:var(--suave);margin-bottom:3px}
+input,select,textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--linha);border-radius:9px;background:#fff;color:var(--texto)}
+input.med{background:var(--campo);font-size:18px;font-variant-numeric:tabular-nums;text-align:right;padding:10px 8px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--texto);outline-offset:-1px}
+.grade2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grade3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+button.bt{display:block;width:100%;font:600 16px/1 inherit;padding:15px;border-radius:10px;border:1px solid var(--texto);background:var(--texto);color:#fff;margin:8px 0}
+button.bt.sec{background:#fff;color:var(--texto)}button.bt.perigo{background:#fff;color:var(--erro);border-color:var(--erro)}
+button.mini{font:600 14px inherit;padding:8px 12px;border-radius:8px;border:1px solid var(--linha);background:#fff;color:var(--texto)}
+.rodape{position:fixed;left:0;right:0;bottom:0;background:var(--cartao);border-top:1px solid var(--linha);padding:10px 16px calc(env(safe-area-inset-bottom) + 10px);display:flex;gap:10px;z-index:5}
+.rodape button{flex:1;margin:0}
+.passos{display:flex;gap:4px;margin:0 0 14px}.passos i{flex:1;height:4px;border-radius:2px;background:var(--linha)}.passos i.on{background:var(--texto)}
+.ponto{border:1px solid var(--linha);border-radius:10px;padding:10px;margin:0 0 10px;background:#fff}
+.ponto .top{display:flex;align-items:center;gap:8px;margin-bottom:8px}.ponto .top b{flex:1}
+.leit{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.leit input{padding:10px 4px;font-size:16px}
+.rot{font-size:12px;color:var(--suave);margin:6px 0 3px}
+.msg{font-size:13px;margin-top:6px}.msg.aviso{color:var(--aviso)}.msg.erro{color:var(--erro)}.msg.ok{color:var(--ok)}
+input.destoa{border:2px solid var(--erro);background:#fdeceb}input.alerta{border:2px solid var(--aviso)}
+.plat{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto auto;gap:8px;border:2px solid var(--texto);border-radius:10px;padding:10px;background:#fafaf8}
+.plat div{text-align:center}.plat small{display:block;color:var(--suave);font-size:12px}
+.pad{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--linha)}.pad:first-child{border-top:0}
+.pad input[type=checkbox]{width:22px;height:22px;margin-top:2px;flex:none}
+.venc{color:var(--erro);font-weight:600}.vence{color:var(--aviso);font-weight:600}.val{color:var(--ok)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--texto);border-radius:10px;overflow:hidden}.seg button{font:700 17px inherit;padding:12px;border:0;background:#fff;color:var(--texto)}.seg button.on{background:var(--texto);color:#fff}
+.vazio{color:var(--suave);text-align:center;padding:30px 10px}
+.faixa{font-size:13px;color:var(--suave);margin:-4px 0 12px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+video{width:100%;border-radius:10px;background:#000}
+.resumo td{padding:4px 6px;border-bottom:1px solid var(--linha);font-variant-numeric:tabular-nums}.resumo{width:100%;border-collapse:collapse;font-size:14px}
+</style>
+</head>
+<body>
+<header><button id="voltar" hidden>‹ Voltar</button><h1 id="titulo">Calibração em campo</h1><button id="perfil-bt">Perfil</button></header>
+<main id="tela"></main>
+<div class="rodape" id="rodape" hidden></div>
+<div class="toast" id="toast"></div>
+
+<script src="jsQR.js" defer></script>
+<script>
+const PADROES_PADRAO = [];
+const CHAVE = 'campo-v1';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ---------- armazenamento ----------
+let db = { perfil: { nome: '', apelido: '', padroes: PADROES_PADRAO, kit: [] }, visitas: [] };
+try { const s = localStorage.getItem(CHAVE); if (s) db = Object.assign(db, JSON.parse(s)); } catch (e) {}
+function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(db)); } catch (e) { toast('Não consegui salvar no celular'); } }
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
+function num(s) { if (s === '' || s == null) return null; const v = parseFloat(String(s).replace(/\s/g, '').replace(',', '.')); return isNaN(v) ? null : v; }
+function fmt(v, c) { if (v == null) return ''; return c == null ? String(v).replace('.', ',') : v.toFixed(c).replace('.', ','); }
+function hojeISO() { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); }
+function agoraISO() { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16); }
+function dataBR(iso) { if (!iso) return ''; const [a, m, d] = iso.slice(0, 10).split('-'); return `${d}/${m}/${a}`; }
+function parseBR(s) { const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s || ''); return m ? new Date(+m[3], m[2] - 1, +m[1]) : null; }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function casasDe(div) { const s = String(div ?? '').match(/[\d.,]+/); if (!s) return null; const t = s[0].replace(',', '.'); return t.includes('.') ? t.split('.')[1].length : 0; }
+function divisaoNum(div) { const s = String(div ?? '').match(/[\d.,]+/); return s ? num(s[0]) : null; }
+
+// situação do padrão na data da calibração
+function situacaoPadrao(p, dataISO) {
+  const v = parseBR(p.validade); if (!v) return { cls: 'vence', txt: 'sem validade cadastrada' };
+  const d = dataISO ? new Date(dataISO.slice(0, 10) + 'T12:00') : new Date();
+  const dias = Math.floor((v - d) / 864e5);
+  if (dias < 0) return { cls: 'venc', txt: `VENCIDO em ${p.validade}`, nivel: 2 };
+  if (dias <= 30) return { cls: 'vence', txt: `vence em ${dias} dia(s), ${p.validade}`, nivel: 1 };
+  return { cls: 'val', txt: `válido até ${p.validade}`, nivel: 0 };
+}
+
+// ---------- navegação ----------
+let rota = { tela: 'inicio' };
+function ir(r) { rota = r; history.pushState(r, ''); desenha(); window.scrollTo(0, 0); }
+window.onpopstate = e => { rota = e.state || { tela: 'inicio' }; desenha(); };
+$('#voltar').onclick = () => history.back();
+$('#perfil-bt').onclick = () => ir({ tela: 'perfil' });
+
+function visita(id) { return db.visitas.find(v => v.id === id); }
+function rodape(botoes) {
+  const r = $('#rodape');
+  if (!botoes) { r.hidden = true; r.innerHTML = ''; return; }
+  r.hidden = false; r.innerHTML = '';
+  for (const [txt, fn, cls] of botoes) { const b = document.createElement('button'); b.className = 'bt ' + (cls || ''); b.textContent = txt; b.onclick = fn; r.appendChild(b); }
+}
+
+function desenha() {
+  $('#voltar').hidden = rota.tela === 'inicio';
+  $('#perfil-bt').hidden = rota.tela !== 'inicio';
+  const t = $('#tela'); t.oninput = t.onchange = t.onclick = null;
+  ({ inicio: telaInicio, perfil: telaPerfil, visita: telaVisita, instrumento: telaInstrumento, ler: telaLer, novaVisita: telaNovaVisita })[rota.tela]();
+}
+
+// ---------- início ----------
+function statusVisita(v) {
+  const n = v.instrumentos.length, prontos = v.instrumentos.filter(i => ['pronto', 'nao_calibrado'].includes(i.situacao)).length;
+  if (v.enviada) return ['s-pronto', 'enviada'];
+  if (n && prontos === n) return ['s-pronto', 'pronta para enviar'];
+  if (v.instrumentos.some(i => i.situacao === 'andamento' || i.situacao === 'pronto')) return ['s-andamento', `${prontos}/${n}`];
+  return ['s-pendente', `${n} instrumento(s)`];
+}
+function telaInicio() {
+  $('#titulo').textContent = 'Calibração em campo';
+  const semPerfil = !db.perfil.nome;
+  const lista = db.visitas.slice().sort((a, b) => (b.criada || '').localeCompare(a.criada || ''));
+  $('#tela').innerHTML = `
+    ${semPerfil ? `<div class="cartao"><h2>Primeiro uso</h2><p>Cadastre seu nome e os padrões do seu kit. Isso é feito uma vez só e vale para todas as visitas.</p><button class="bt" id="ir-perfil">Cadastrar meu perfil</button></div>` : ''}
+    <div class="cartao"><h2>Visitas</h2>
+      ${lista.length ? lista.map(v => { const [c, t] = statusVisita(v); return `<div class="item" data-id="${v.id}"><div class="txt"><b>${esc(v.cliente.nome || 'Cliente sem nome')}</b><small>${dataBR(v.criada)} · ${v.origem === 'pcp' ? 'ordem do PCP' : 'aberta no campo'}${v.os ? ' · OS ' + esc(v.os) : ''}</small></div><span class="selo ${c}">${t}</span></div>`; }).join('')
+      : '<div class="vazio">Nenhuma visita ainda.<br>Leia o QR do PCP ou abra uma visita aqui mesmo.</div>'}
+    </div>`;
+  $('#ir-perfil') && ($('#ir-perfil').onclick = () => ir({ tela: 'perfil' }));
+  document.querySelectorAll('.item[data-id]').forEach(el => el.onclick = () => ir({ tela: 'visita', id: el.dataset.id }));
+  rodape([['Ler QR do PCP', () => ir({ tela: 'ler' })], ['Nova visita', () => ir({ tela: 'novaVisita' }), 'sec']]);
+}
+
+// ---------- perfil ----------
+function telaPerfil() {
+  $('#titulo').textContent = 'Meu perfil';
+  const p = db.perfil;
+  $('#tela').innerHTML = `
+    <div class="cartao"><h2>Técnico</h2>
+      <label class="cp"><span>Nome completo (vai em "Técnico Executante")</span><input id="p-nome" value="${esc(p.nome)}" autocomplete="name"></label>
+      <label class="cp"><span>Como assina como digitador</span><input id="p-apelido" value="${esc(p.apelido)}" placeholder="ex.: Eduardo"></label>
+    </div>
+    <div class="cartao"><h2>Padrões do meu kit</h2><p class="faixa">Marque os que você leva para o campo. Eles já vêm marcados em cada calibração. A lista chega junto com a primeira ordem do PCP.</p>
+      <div id="p-pads">${p.padroes.map((x, i) => { const s = situacaoPadrao(x); return `<label class="pad"><input type="checkbox" data-cod="${esc(x.codigo)}" ${p.kit.includes(x.codigo) ? 'checked' : ''}><span><b>${esc(x.codigo)}</b> ${esc(x.descricao)}<br><small>Cert. ${esc(x.certificado)} · ${esc(x.organismo)}</small><br><small class="${s.cls}">${s.txt}</small></span></label>`; }).join('')}</div>
+    </div>
+    <div class="cartao"><h2>Cadastrar outro padrão</h2>
+      <div class="grade2"><label class="cp"><span>Código</span><input id="n-cod" placeholder="CPP-011"></label><label class="cp"><span>Validade</span><input id="n-val" placeholder="31/03/2027" inputmode="numeric"></label></div>
+      <label class="cp"><span>Descrição</span><input id="n-desc" placeholder="JOGO DE PESOS PADRÃO - F1"></label>
+      <div class="grade2"><label class="cp"><span>Certificado</span><input id="n-cert"></label><label class="cp"><span>Organismo</span><input id="n-org"></label></div>
+      <button class="mini" id="n-add">Adicionar padrão</button>
+    </div>`;
+  const guarda = () => {
+    p.nome = $('#p-nome').value.trim(); p.apelido = $('#p-apelido').value.trim();
+    p.kit = [...document.querySelectorAll('#p-pads input:checked')].map(i => i.dataset.cod); salvar();
+  };
+  $('#tela').oninput = $('#tela').onchange = guarda;
+  $('#n-add').onclick = () => {
+    const cod = $('#n-cod').value.trim().toUpperCase(); if (!cod) return toast('Informe o código');
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test($('#n-val').value.trim())) return toast('Validade no formato dd/mm/aaaa');
+    p.padroes = p.padroes.filter(x => x.codigo !== cod);
+    p.padroes.push({ codigo: cod, descricao: $('#n-desc').value.trim().toUpperCase(), certificado: $('#n-cert').value.trim(), validade: $('#n-val').value.trim(), organismo: $('#n-org').value.trim().toUpperCase() });
+    if (!p.kit.includes(cod)) p.kit.push(cod); salvar(); telaPerfil(); toast('Padrão cadastrado');
+  };
+  rodape([['Pronto', () => history.back()]]);
+}
+
+// ---------- ordem do PCP ----------
+function importarOrdem(txt) {
+  let o;
+  try { o = JSON.parse(txt); } catch (e) {
+    try { o = JSON.parse(decodeURIComponent(escape(atob(txt.replace(/-/g, '+').replace(/_/g, '/'))))); } catch (e2) { toast('Código não reconhecido'); return false; }
+  }
+  if (!o || !o.instrumentos) { toast('Isso não é uma ordem do PCP'); return false; }
+  if (db.visitas.some(v => v.id === o.visita_id)) { toast('Essa ordem já está no celular'); ir({ tela: 'visita', id: o.visita_id }); return true; }
+  if (Array.isArray(o.padroes)) { for (const x of o.padroes) { db.perfil.padroes = db.perfil.padroes.filter(y => y.codigo !== x.codigo); db.perfil.padroes.push(x); } db.perfil.padroes.sort((a, b) => a.codigo.localeCompare(b.codigo)); }
+  const v = { id: o.visita_id || uid(), origem: 'pcp', criada: agoraISO(), os: o.os || '', cliente: o.cliente || {}, instrumentos: o.instrumentos.map(i => { const n = novoInstrumento(i.tipo || 'balanca', i.cadastro || {}); if (Array.isArray(i.padroes_usados) && i.padroes_usados.length) n.campo.padroes_usados = [...i.padroes_usados]; return n; }) };
+  db.visitas.push(v); salvar(); toast('Ordem recebida'); history.replaceState({ tela: 'inicio' }, ''); ir({ tela: 'visita', id: v.id }); return true;
+}
+function novoInstrumento(tipo, cad) {
+  return { uid: uid(), tipo, cadastro: cad, situacao: 'pendente', campo: { pontos: [], excentricidade: { antes: [], depois: [] }, padroes_usados: [...db.perfil.kit] } };
+}
+// link do PCP: ...#ordem=BASE64
+function checaLink() { if (location.hash.startsWith('#ordem=')) { const t = location.hash.slice(7); history.replaceState({ tela: 'inicio' }, '', location.pathname); setTimeout(() => importarOrdem(t), 50); } }
+checaLink();
+window.addEventListener('hashchange', checaLink);
+
+let fluxo = null;
+function telaLer() {
+  $('#titulo').textContent = 'Receber ordem do PCP';
+  $('#tela').innerHTML = `
+    <div class="cartao"><h2>Câmera</h2><video id="cam" playsinline muted></video><p class="faixa" id="cam-msg" style="margin-top:8px">Aponte para o QR code na tela do PCP.</p></div>
+    <div class="cartao"><h2>Ou</h2>
+      <label class="cp"><span>Abrir arquivo da ordem (.json) recebido por WhatsApp, AirDrop ou e-mail</span><input type="file" id="arq" accept=".json,application/json,text/plain"></label>
+      <label class="cp"><span>Colar o código</span><textarea id="cola" rows="3"></textarea></label><button class="mini" id="cola-ok">Receber</button>
+    </div>`;
+  $('#arq').onchange = async e => { const f = e.target.files[0]; if (f) { para(); importarOrdem(await f.text()); } };
+  $('#cola-ok').onclick = () => { const t = $('#cola').value.trim(); const m = t.match(/#ordem=([^\s]+)/); para(); importarOrdem(m ? m[1] : t); };
+  rodape(null);
+  iniciaCamera();
+}
+function para() { if (fluxo) { fluxo.getTracks().forEach(t => t.stop()); fluxo = null; } }
+async function iniciaCamera() {
+  const v = $('#cam'); if (!v) return;
+  try { fluxo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); } catch (e) { $('#cam-msg').textContent = 'Câmera indisponível. Use o arquivo ou cole o código.'; return; }
+  v.srcObject = fluxo; await v.play();
+  const c = document.createElement('canvas'), ctx = c.getContext('2d', { willReadFrequently: true });
+  const laco = () => {
+    if (!fluxo || rota.tela !== 'ler') return para();
+    if (v.readyState >= 2 && window.jsQR) {
+      c.width = v.videoWidth; c.height = v.videoHeight; ctx.drawImage(v, 0, 0);
+      const r = jsQR(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height);
+      if (r && r.data) { para(); const m = r.data.match(/#ordem=(.+)$/); importarOrdem(m ? m[1] : r.data); return; }
+    }
+    requestAnimationFrame(laco);
+  };
+  laco();
+}
+
+// ---------- visita sem PCP ----------
+function telaNovaVisita() {
+  $('#titulo').textContent = 'Nova visita';
+  $('#tela').innerHTML = `<div class="cartao"><h2>Cliente</h2>
+    <label class="cp"><span>Nome do cliente</span><input id="c-nome"></label>
+    <label class="cp"><span>Endereço</span><input id="c-end"></label>
+    <label class="cp"><span>Número da OS</span><input id="c-os"></label></div>`;
+  rodape([['Criar visita', () => {
+    const nome = $('#c-nome').value.trim(); if (!nome) return toast('Informe o cliente');
+    const v = { id: uid(), origem: 'campo', criada: agoraISO(), os: $('#c-os').value.trim(), cliente: { nome, endereco: $('#c-end').value.trim() }, instrumentos: [] };
+    db.visitas.push(v); salvar(); history.replaceState({ tela: 'inicio' }, ''); ir({ tela: 'visita', id: v.id });
+  }]]);
+}
+
+// ---------- visita ----------
+const SIT = { pendente: ['s-pendente', 'a fazer'], andamento: ['s-andamento', 'em andamento'], pronto: ['s-pronto', 'pronta'], nao_calibrado: ['s-nao', 'não calibrado'] };
+function telaVisita() {
+  const v = visita(rota.id); if (!v) return ir({ tela: 'inicio' });
+  $('#titulo').textContent = v.cliente.nome || 'Visita';
+  $('#tela').innerHTML = `
+    <div class="cartao"><h2>Cliente</h2><b>${esc(v.cliente.nome)}</b><br><small>${esc(v.cliente.endereco || '')}</small>${v.os ? `<br><small>OS ${esc(v.os)}</small>` : ''}</div>
+    <div class="cartao"><h2>Instrumentos</h2>
+      ${v.instrumentos.length ? v.instrumentos.map((i, k) => { const [c, t] = SIT[i.situacao]; const cd = i.cadastro; return `<div class="item" data-k="${k}"><div class="txt"><b>${k + 1}. ${esc(cd.n_metrologico || 'Sem nº metrológico')}</b><small>${esc([cd.instrumento || 'Balança', cd.fabricante, cd.modelo].filter(Boolean).join(' · '))}${cd.faixa_calibrada ? ' · ' + esc(cd.faixa_calibrada) : ''}</small></div><span class="selo ${c}">${t}</span></div>`; }).join('') : '<div class="vazio">Nenhum instrumento.</div>'}
+      <button class="mini" id="add-inst" style="margin-top:10px">+ Balança não prevista na ordem</button>
+    </div>
+    ${v.enviada ? `<p class="faixa">Enviada em ${dataBR(v.enviada)} ${v.enviada.slice(11, 16)}. Pode enviar de novo se corrigir algo.</p>` : ''}
+    <button class="bt perigo" id="apagar">Apagar visita do celular</button>`;
+  document.querySelectorAll('.item[data-k]').forEach(el => el.onclick = () => ir({ tela: 'instrumento', id: v.id, k: +el.dataset.k, passo: 0 }));
+  $('#add-inst').onclick = () => { v.instrumentos.push(novoInstrumento('balanca', { instrumento: 'BALANÇA' })); salvar(); ir({ tela: 'instrumento', id: v.id, k: v.instrumentos.length - 1, passo: 0 }); };
+  $('#apagar').onclick = () => { if (confirm(v.enviada ? 'Apagar esta visita do celular?' : 'Esta visita AINDA NÃO FOI ENVIADA. Apagar mesmo assim?')) { db.visitas = db.visitas.filter(x => x !== v); salvar(); history.back(); } };
+  const prontos = v.instrumentos.filter(i => i.situacao === 'pronto' || i.situacao === 'nao_calibrado').length;
+  rodape([[prontos === v.instrumentos.length && prontos ? 'Enviar ao laboratório' : `Enviar (${prontos}/${v.instrumentos.length} prontas)`, () => enviar(v)]]);
+}
+
+// ---------- instrumento: passos ----------
+const PASSOS = ['Identificação', 'Início', 'Pontos de carga', 'Excentricidade', 'Fim'];
+function telaInstrumento() {
+  const v = visita(rota.id); const inst = v && v.instrumentos[rota.k]; if (!inst) return ir({ tela: 'inicio' });
+  const p = rota.passo || 0, cd = inst.cadastro, cp = inst.campo;
+  $('#titulo').textContent = `${cd.n_metrologico || 'Balança'} · ${PASSOS[p]}`;
+  const barra = `<div class="passos">${PASSOS.map((_, i) => `<i class="${i <= p ? 'on' : ''}"></i>`).join('')}</div>`;
+  const un = cd.unidade || 'g';
+  let h = '';
+  if (p === 0) {
+    if (!cp.data_calibracao) { cp.data_calibracao = hojeISO(); salvar(); }
+    const c = (k, r, ph = '') => `<label class="cp"><span>${r}</span><input data-cad="${k}" value="${esc(cd[k])}" placeholder="${ph}"></label>`;
+    h = `<div class="cartao"><h2>Instrumento</h2>
+      ${v.origem === 'pcp' ? '<p class="faixa">Preenchido pelo PCP. Corrija só se o que está na placa for diferente.</p>' : ''}
+      <div class="grade2">${c('instrumento', 'Equipamento', 'BALANÇA')}<label class="cp"><span>Data</span><input type="date" data-campo="data_calibracao" value="${esc(cp.data_calibracao || hojeISO())}"></label></div>
+      <div class="grade2">${c('n_metrologico', 'Tag (nº metrológico)', 'EM 356')}${c('serie', 'N.S. (nº de série)')}</div>
+      <div class="grade2">${c('fabricante', 'Fabricante')}${c('modelo', 'Modelo')}</div>
+      ${c('faixa_indicacao', 'Faixa de indicação', '0,000 g a 3200,000 g')}${c('faixa_calibrada', 'Faixa calibrada', '0,000 g a 100,000 g')}
+      <div class="grade2">${c('divisao', 'Valor de uma divisão', '0,001 g')}<label class="cp"><span>Unidade</span><select data-cad="unidade">${['g', 'kg', 'mg', 't'].map(u => `<option ${u === un ? 'selected' : ''}>${u}</option>`).join('')}</select></label></div>
+      <label class="cp"><span>Local da balança no cliente</span><input data-campo="local_texto" value="${esc(cp.local_texto)}" placeholder="ex.: pesagem inoculação"></label>
+    </div>
+    <button class="bt perigo" id="nao-cal">Não foi possível calibrar</button>`;
+  } else if (p === 1) {
+    if (!cp.inicio) { cp.inicio = agoraISO(); cp.data_calibracao = cp.data_calibracao || hojeISO(); if (!cp.padroes_usados.length) cp.padroes_usados = [...db.perfil.kit]; inst.situacao = 'andamento'; salvar(); }
+    h = `<div class="cartao"><h2>Condições ambientais no início</h2>
+      <div class="grade3">${amb('t_inicio', 'T (°C)', cp)}${amb('u_inicio', 'UR (%)', cp)}${amb('p_inicio', 'P (hPa)', cp)}</div>
+      <p class="faixa">Início registrado às ${cp.inicio.slice(11, 16)} de ${dataBR(cp.inicio)}. O tempo de calibração é contado sozinho.</p></div>
+    <div class="cartao"><h2>Padrões usados nesta balança</h2><div id="pads">${padroesHTML(cp)}</div></div>`;
+  } else if (p === 2) {
+    if (!cp.pontos.length) cp.pontos = [novoPonto()];
+    const rt = cp.ref_tipo || 'VN';
+    h = `<div class="cartao"><h2>Referência anotada</h2><div class="seg">${['VN', 'VC'].map(t => `<button data-reftipo="${t}" class="${rt === t ? 'on' : ''}">${t}</button>`).join('')}</div><p class="faixa" style="margin:8px 0 0">${rt === 'VN' ? 'Valor nominal. O VC sai da tabela de pesos no laboratório.' : 'Valor convencional do certificado do peso.'}</p></div>
+      <p class="faixa">Unidade: ${esc(un)} · divisão ${esc(cd.divisao || '?')}. VM antes e depois do ajuste; as repetições M2 a M5 só se forem medidas. "= VM" repete a leitura.</p>
+      <div id="pontos">${cp.pontos.map((pt, i) => pontoHTML(pt, i, cd, rt)).join('')}</div>
+      <button class="mini" id="add-pt" ${cp.pontos.length >= 10 ? 'disabled' : ''}>+ Ponto (${cp.pontos.length}/10)</button>`;
+  } else if (p === 3) {
+    const e = cp.excentricidade;
+    const pos = (lado, n) => `<div><small>${n}</small><input class="med" inputmode="decimal" data-exc="${lado}" data-i="${n - 1}" value="${fmt(e[lado][n - 1])}"></div>`;
+    const plat = lado => `<div class="plat">${pos(lado, 2)}<div></div>${pos(lado, 5)}<div></div>${pos(lado, 1)}<div></div>${pos(lado, 3)}<div></div>${pos(lado, 4)}</div>`;
+    h = `<div class="cartao"><h2>Carga usada</h2><label class="cp"><span>VC da carga de excentricidade (${esc(un)})</span><input class="med" inputmode="decimal" data-excvc value="${fmt(e.vc)}"></label></div>
+      <div class="cartao"><h2>Antes do ajuste</h2>${plat('antes')}<button class="mini" data-igual="antes" style="margin-top:8px">Todas = posição 1</button></div>
+      <div class="cartao"><h2>Depois do ajuste</h2>${plat('depois')}<button class="mini" data-igual="depois" style="margin-top:8px">Todas = posição 1</button><div class="msg" id="exc-msg"></div></div>`;
+  } else {
+    if (!cp.fim) { cp.fim = agoraISO(); salvar(); }
+    const min = Math.round((new Date(cp.fim) - new Date(cp.inicio)) / 6e4);
+    h = `<div class="cartao"><h2>Condições ambientais no fim</h2><div class="grade3">${amb('t_fim', 'T (°C)', cp)}${amb('u_fim', 'UR (%)', cp)}${amb('p_fim', 'P (hPa)', cp)}</div><div class="msg" id="amb-msg"></div></div>
+      <div class="cartao"><h2>Observações</h2><textarea data-campo="observacoes" rows="3" placeholder="ex.: ponto solicitado pelo cliente">${esc(cp.observacoes)}</textarea></div>
+      <div class="cartao"><h2>Tempo de calibração</h2><div class="grade2"><label class="cp"><span>Minutos</span><input class="med" inputmode="numeric" data-campo-num="tempo_min" value="${cp.tempo_min ?? min}"></label><div class="faixa" style="margin-top:22px">Das ${cp.inicio.slice(11, 16)} às ${cp.fim.slice(11, 16)}</div></div></div>
+      <div class="cartao"><h2>Conferência</h2><div id="conf">${conferencia(inst)}</div></div>`;
+  }
+  $('#tela').innerHTML = barra + h;
+  ligaInstrumento(v, inst, p);
+  const passo = n => { rota = { ...rota, passo: n }; history.replaceState(rota, ''); desenha(); window.scrollTo(0, 0); };
+  const ant = p > 0 ? ['‹ Anterior', () => passo(p - 1), 'sec'] : null;
+  const prox = p < 4 ? ['Próximo ›', () => passo(p + 1)] : ['Concluir balança', () => { inst.situacao = 'pronto'; salvar(); toast('Balança concluída'); history.back(); }];
+  rodape([ant, prox].filter(Boolean));
+}
+function amb(k, r, cp) { return `<label class="cp"><span>${r}</span><input class="med" inputmode="decimal" data-campo-num="${k}" value="${fmt(cp[k])}"></label>`; }
+function padroesHTML(cp) {
+  const lista = db.perfil.padroes;
+  return lista.map(x => { const s = situacaoPadrao(x, cp.data_calibracao); return `<label class="pad"><input type="checkbox" data-pad="${esc(x.codigo)}" ${cp.padroes_usados.includes(x.codigo) ? 'checked' : ''}><span><b>${esc(x.codigo)}</b> ${esc(x.descricao)}<br><small class="${s.cls}">${s.txt}</small></span></label>`; }).join('') || '<div class="vazio">Cadastre padrões no seu perfil.</div>';
+}
+function novoPonto() { return { nominal: null, vc: null, m1_antes: null, depois: [null, null, null, null, null] }; }
+function pontoHTML(pt, i, cd, rt) {
+  const inp = (attr, v, cls = '') => `<input class="med ${cls}" inputmode="decimal" ${attr} value="${fmt(v)}">`;
+  const k = rt === 'VC' ? 'vc' : 'nominal';
+  return `<div class="ponto" data-i="${i}"><div class="top"><b>Ponto ${i + 1}</b><button class="mini" data-igual-pt="${i}">= VM</button><button class="mini" data-del-pt="${i}">✕</button></div>
+    <div class="grade3"><div><div class="rot">${rt || 'VN'}</div>${inp(`data-pt="${i}" data-k="${k}"`, pt[k])}</div><div><div class="rot">VM antes</div>${inp(`data-pt="${i}" data-k="m1_antes"`, pt.m1_antes)}</div><div><div class="rot">VM depois</div>${inp(`data-pt="${i}" data-dep="0"`, pt.depois[0])}</div></div>
+    <div class="rot">Repetições depois do ajuste: M2 a M5</div><div class="leit" style="grid-template-columns:repeat(4,1fr)">${pt.depois.slice(1).map((x, j) => inp(`data-pt="${i}" data-dep="${j + 1}"`, x)).join('')}</div>
+    <div class="msg" data-msg="${i}"></div></div>`;
+}
+
+// avaliação de um ponto, na hora
+function avaliaPonto(pt, i, pts, cd) {
+  const div = divisaoNum(cd.divisao) || 0; const casas = casasDe(cd.divisao) ?? 4;
+  const lidas = pt.depois.filter(x => x != null);
+  const out = { destoa: [], msgs: [] };
+  if (lidas.length >= 3) {
+    const med = lidas.slice().sort((a, b) => a - b)[Math.floor(lidas.length / 2)];
+    pt.depois.forEach((x, j) => { if (x != null && div && Math.abs(x - med) > 5 * div) out.destoa.push(j); });
+    if (out.destoa.length) out.msgs.push(['erro', `Leitura ${out.destoa.map(j => 'M' + (j + 1)).join(', ')} destoa das outras. Confira a leitura.`]);
+  }
+  const ref = pt.vc ?? pt.nominal;
+  if (ref != null && lidas.length) {
+    const m = lidas.reduce((s, x) => s + x, 0) / lidas.length, ei = m - ref;
+    out.msgs.push([div && Math.abs(ei) > 10 * div ? 'aviso' : 'ok', `Média ${fmt(m, casas)} · erro ${ei >= 0 ? '+' : ''}${fmt(ei, casas)} ${esc(cd.unidade || 'g')}${pt.vc == null ? ' (sobre o nominal)' : ''}`]);
+  }
+  const ant = i > 0 ? (pts[i - 1].vc ?? pts[i - 1].nominal) : null;
+  if (ref != null && ant != null && ref <= ant) out.msgs.push(['aviso', 'Carga menor ou igual ao ponto anterior: deve ser crescente.']);
+  if (lidas.length > 1 && lidas.length < 5) out.msgs.push(['aviso', `Repetições pela metade: ${lidas.length} de 5 leituras depois do ajuste.`]);
+  return out;
+}
+function atualizaPontos(inst) {
+  const pts = inst.campo.pontos;
+  pts.forEach((pt, i) => {
+    const a = avaliaPonto(pt, i, pts, inst.cadastro);
+    document.querySelectorAll(`[data-pt="${i}"][data-dep]`).forEach(el => el.classList.toggle('destoa', a.destoa.includes(+el.dataset.dep)));
+    const m = document.querySelector(`[data-msg="${i}"]`); if (m) m.innerHTML = a.msgs.map(([c, t]) => `<div class="msg ${c}">${t}</div>`).join('');
+  });
+}
+
+function ligaInstrumento(v, inst, p) {
+  const cd = inst.cadastro, cp = inst.campo, tela = $('#tela');
+  tela.oninput = tela.onchange = e => {
+    const t = e.target, d = t.dataset;
+    if (d.cad) cd[d.cad] = t.value.trim();
+    else if (d.campo) cp[d.campo] = t.value;
+    else if (d.campoNum) cp[d.campoNum] = num(t.value);
+    else if (d.pad) { cp.padroes_usados = [...document.querySelectorAll('[data-pad]:checked')].map(i => i.dataset.pad); }
+    else if (d.pt != null && d.k) cp.pontos[+d.pt][d.k] = num(t.value);
+    else if (d.pt != null && d.dep != null) cp.pontos[+d.pt].depois[+d.dep] = num(t.value);
+    else if (d.exc) cp.excentricidade[d.exc][+d.i] = num(t.value);
+    else if ('excvc' in d) cp.excentricidade.vc = num(t.value);
+    salvar();
+    if (p === 2) atualizaPontos(inst);
+    if (p === 3) atualizaExc(inst);
+    if (p === 4) { atualizaAmb(cp); $('#conf').innerHTML = conferencia(inst); }
+  };
+  tela.onclick = e => {
+    const d = e.target.dataset;
+    if (d.reftipo && d.reftipo !== (cp.ref_tipo || 'VN')) { const para = d.reftipo === 'VC' ? 'vc' : 'nominal', de = para === 'vc' ? 'nominal' : 'vc'; cp.pontos.forEach(pt => { if (pt[para] == null) pt[para] = pt[de]; pt[de] = null; }); cp.ref_tipo = d.reftipo; salvar(); return telaInstrumento(); }
+    if (e.target.id === 'nao-cal') { const m = prompt('Motivo (vai para as observações):'); if (m) { inst.situacao = 'nao_calibrado'; cp.observacoes = m; salvar(); history.back(); } }
+    if (e.target.id === 'add-pt') { const ult = cp.pontos[cp.pontos.length - 1]; cp.pontos.push(novoPonto()); salvar(); telaInstrumento(); const ins = document.querySelectorAll(`[data-pt="${cp.pontos.length - 1}"][data-k="nominal"]`)[0]; ins && ins.focus(); }
+    if (d.igualPt != null) { const pt = cp.pontos[+d.igualPt]; const b = pt.depois[0] ?? pt.m1_antes; if (b == null) return toast('Digite M1 primeiro'); pt.depois = pt.depois.map(x => x ?? b); salvar(); telaInstrumento(); }
+    if (d.delPt != null) { if (confirm(`Apagar o ponto ${+d.delPt + 1}?`)) { cp.pontos.splice(+d.delPt, 1); salvar(); telaInstrumento(); } }
+    if (d.igual) { const a = cp.excentricidade[d.igual]; if (a[0] == null) return toast('Digite a posição 1 primeiro'); for (let i = 0; i < 5; i++) a[i] = a[i] ?? a[0]; salvar(); telaInstrumento(); }
+  };
+  if (p === 2) atualizaPontos(inst);
+  if (p === 3) atualizaExc(inst);
+  if (p === 4) atualizaAmb(cp);
+}
+function atualizaExc(inst) {
+  const e = inst.campo.excentricidade, cd = inst.cadastro, casas = casasDe(cd.divisao) ?? 4, m = $('#exc-msg'); if (!m) return;
+  const d = e.depois.filter(x => x != null);
+  if (d.length < 5) { m.className = 'msg aviso'; m.textContent = `${5 - d.length} posição(ões) faltando.`; return; }
+  const dif = Math.max(...d) - Math.min(...d);
+  m.className = 'msg ok'; m.textContent = `Maior diferença entre posições: ${fmt(dif, casas)} ${cd.unidade || 'g'}`;
+}
+function atualizaAmb(cp) {
+  const m = $('#amb-msg'); if (!m) return;
+  const dt = cp.t_fim != null && cp.t_inicio != null ? Math.abs(cp.t_fim - cp.t_inicio) : null;
+  m.className = 'msg ' + (dt != null && dt > 2 ? 'aviso' : 'ok');
+  m.textContent = dt == null ? '' : `Variação de temperatura durante a calibração: ${fmt(dt, 1)} °C${dt > 2 ? '. Registre nas observações.' : ''}`;
+}
+function conferencia(inst) {
+  const cp = inst.campo, cd = inst.cadastro, lin = [];
+  const add = (c, t) => lin.push(`<div class="msg ${c}">${c === 'ok' ? '✔' : c === 'aviso' ? '△' : '✖'} ${t}</div>`);
+  ['t_inicio', 'u_inicio', 'p_inicio', 't_fim', 'u_fim', 'p_fim'].some(k => cp[k] == null) ? add('erro', 'Condições ambientais incompletas.') : add('ok', 'Ambiente de início e fim registrado.');
+  const pads = db.perfil.padroes.filter(x => cp.padroes_usados.includes(x.codigo));
+  if (!pads.length) add('erro', 'Nenhum padrão marcado.');
+  pads.forEach(x => { const s = situacaoPadrao(x, cp.data_calibracao); if (s.nivel) add(s.nivel === 2 ? 'erro' : 'aviso', `${x.codigo}: ${s.txt}`); });
+  if (pads.length && pads.every(x => !situacaoPadrao(x, cp.data_calibracao).nivel)) add('ok', `${pads.length} padrão(ões) válidos na data.`);
+  const pts = cp.pontos.filter(pt => pt.depois.some(x => x != null));
+  if (!pts.length) add('erro', 'Nenhum ponto de carga medido.');
+  else {
+    let problemas = 0; pts.forEach((pt, i) => { const a = avaliaPonto(pt, i, pts, cd); const n = pt.depois.filter(x => x != null).length; if (a.destoa.length || (n > 1 && n < 5)) problemas++; });
+    problemas ? add('aviso', `${problemas} ponto(s) com leitura destoante ou repetições pela metade.`) : add('ok', `${pts.length} ponto(s) medidos.`);
+    const soVM = pts.filter(pt => pt.depois.filter(x => x != null).length === 1).length; if (soVM) add('aviso', `${soVM} ponto(s) só com VM, sem as repetições M2 a M5.`);
+    const semVC = pts.filter(pt => pt.vc == null).length; if (semVC) add('aviso', `${semVC} ponto(s) sem VC: o laboratório completa.`);
+  }
+  cp.excentricidade.depois.filter(x => x != null).length === 5 ? add('ok', 'Excentricidade nas 5 posições.') : add('aviso', 'Excentricidade incompleta.');
+  if (!cd.n_metrologico) add('aviso', 'Sem nº metrológico.');
+  return lin.join('');
+}
+
+// ---------- envio ----------
+async function enviar(v) {
+  const faltam = v.instrumentos.filter(i => !['pronto', 'nao_calibrado'].includes(i.situacao));
+  if (faltam.length && !confirm(`${faltam.length} instrumento(s) ainda não concluído(s). Enviar assim mesmo?`)) return;
+  if (!db.perfil.nome) { toast('Cadastre seu nome no perfil'); return ir({ tela: 'perfil' }); }
+  const pacote = {
+    versao: 1, visita_id: v.id, os: v.os, enviado: agoraISO(), cliente: v.cliente,
+    tecnico: { nome: db.perfil.nome, apelido: db.perfil.apelido, padroes: db.perfil.padroes },
+    instrumentos: v.instrumentos.map(i => ({ tipo: i.tipo, situacao: i.situacao, cadastro: Object.assign({ os: v.os }, i.cadastro), campo: i.campo }))
+  };
+  const nome = `visita ${(v.cliente.nome || 'cliente').replace(/[\\/:*?"<>|]/g, '-').slice(0, 40)} ${dataBR(v.criada).replace(/\//g, '-')}.json`;
+  const arq = new File([JSON.stringify(pacote, null, 1)], nome, { type: 'application/json' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [arq] })) await navigator.share({ files: [arq], title: nome });
+    else { const a = document.createElement('a'); a.href = URL.createObjectURL(arq); a.download = nome; a.click(); }
+    v.enviada = agoraISO(); salvar(); telaVisita(); toast('Arquivo pronto');
+  } catch (e) { if (e.name !== 'AbortError') toast('Não consegui compartilhar: ' + e.message); }
+}
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+history.replaceState(rota, '');
+desenha();
+</script>
+</body>
+</html>
