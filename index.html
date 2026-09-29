@@ -172,7 +172,7 @@ function telaInicio() {
   const semPerfil = !db.perfil.nome;
   const lista = db.visitas.slice().sort((a, b) => (b.criada || '').localeCompare(a.criada || ''));
   $('#tela').innerHTML = `
-    ${semPerfil ? `<div class="cartao"><h2>Primeiro uso</h2><p>Cadastre seu nome e os padrões do seu kit. Isso é feito uma vez só e vale para todas as visitas.</p><button class="bt" id="ir-perfil">Cadastrar meu perfil</button></div>` : ''}
+    ${semPerfil ? `<div class="cartao"><h2>Primeiro uso</h2><p>Cadastre seu nome, que vai no certificado como técnico executante. Isso é feito uma vez só e vale para todas as visitas. Os padrões chegam com o QR do PCP.</p><button class="bt" id="ir-perfil">Cadastrar meu nome</button></div>` : ''}
     <div class="cartao"><h2>Visitas</h2>
       ${lista.length ? lista.map(v => { const [c, t] = statusVisita(v); return `<div class="item" data-id="${v.id}"><div class="txt"><b>${esc(v.cliente.nome || 'Cliente sem nome')}</b><small>${dataBR(v.criada)} · ${v.origem === 'pcp' ? 'ordem do PCP' : 'aberta no campo'}${v.os ? ' · OS ' + esc(v.os) : ''}</small></div><span class="selo ${c}">${t}</span></div>`; }).join('')
       : '<div class="vazio">Nenhuma visita ainda.<br>Leia o QR do PCP ou abra uma visita aqui mesmo.</div>'}
