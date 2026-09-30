@@ -1,5 +1,5 @@
 // Guarda o app no celular para abrir sem internet.
-const CACHE = 'campo-7c6377c1';
+const CACHE = 'campo-1829f2b9';
 const ARQUIVOS = ['./', 'index.html', 'manifest.json', 'jsQR.js', 'icone-180.png', 'icone-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });

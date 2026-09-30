@@ -3,84 +3,233 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f2328">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Campo">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icone-180.png">
 <title>Calibração em campo</title>
 <style>
-:root{--fundo:#f4f4f2;--cartao:#fff;--texto:#1f2328;--suave:#5f6368;--linha:#d9d9d6;--destaque:#c9302c;--ok:#1e7a3c;--aviso:#b7791f;--erro:#c9302c;--campo:#fffdf0;--barra:#1f2328}
+:root{
+  --bg:#f2f2f7;--card:#fff;--elev:#fff;--label:#000;--label2:#6c6c70;--label3:#8e8e93;--sep:rgba(60,60,67,.18);
+  --fill:#e9e9ee;--fill2:#f2f2f7;--blue:#0a6fe8;--blue-t:#e7f0fd;--red:#d92d20;--red-t:#fdecea;--orange:#b55a00;--orange-t:#fff0dc;
+  --green:#1d8a3a;--green-t:#e3f4e7;--campo:#fffdf2;--sombra:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.05);
+  --barra:rgba(249,249,251,.86);--raio:14px;--safe-b:env(safe-area-inset-bottom);--safe-t:env(safe-area-inset-top);
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#000;--card:#1c1c1e;--elev:#2c2c2e;--label:#fff;--label2:#aeaeb2;--label3:#8e8e93;--sep:rgba(84,84,88,.55);
+  --fill:#2c2c2e;--fill2:#1c1c1e;--blue:#3a94ff;--blue-t:#0e2a4d;--red:#ff6a5f;--red-t:#3d1512;--orange:#ffab4d;--orange-t:#3a2508;
+  --green:#4cd068;--green-t:#0f2e17;--campo:#26251c;--sombra:none;--barra:rgba(22,22,24,.86);
+}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--fundo);color:var(--texto);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:0;z-index:5;background:var(--barra);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:10px}
-header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-header button{background:none;border:0;color:#fff;font-size:16px;padding:6px 4px}
-#menu-bt{font-size:24px;line-height:1;padding:4px 6px}
-#veu{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30}
-#menu{position:fixed;top:0;right:0;bottom:0;width:min(82vw,320px);background:var(--cartao);z-index:31;transform:translateX(100%);transition:transform .2s ease;padding:calc(env(safe-area-inset-top) + 14px) 0 calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column}
-#menu.aberto{transform:none;box-shadow:-8px 0 24px rgba(0,0,0,.15)}
 [hidden]{display:none!important}
-#menu .quem{padding:4px 20px 14px;border-bottom:1px solid var(--linha);margin-bottom:6px}#menu .quem b{display:block;font-size:17px}#menu .quem small{color:var(--suave)}
-#menu button{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;text-align:left;font:500 16px inherit;color:var(--texto);padding:14px 20px}
-#menu button.atual{background:var(--fundo);font-weight:700;box-shadow:inset 3px 0 0 var(--destaque)}
-#menu button i{font-style:normal;width:22px;text-align:center}#menu button span{flex:1}
-#menu .cont{font-style:normal;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--fundo);color:var(--suave)}#menu .cont.alerta{background:#f6dcdb;color:var(--erro)}
-#menu .rod{margin-top:auto;padding:14px 20px 0;font-size:12px;color:var(--suave);border-top:1px solid var(--linha)}
-@media (prefers-reduced-motion: reduce){#menu{transition:none}}
-main{padding:14px 16px calc(env(safe-area-inset-bottom) + 100px);max-width:720px;margin:0 auto}
-html{scroll-padding-bottom:calc(env(safe-area-inset-bottom) + 110px);scroll-padding-top:70px}
-main input,main button,main textarea,main select{scroll-margin-bottom:calc(env(safe-area-inset-bottom) + 110px)}
-.cartao{background:var(--cartao);border:1px solid var(--linha);border-radius:12px;padding:14px;margin:0 0 12px}
-.cartao h2{font-size:15px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave)}
-.item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--linha)}
-.item:first-of-type{border-top:0}
-.item .txt{flex:1;min-width:0}.item .txt b{display:block}.item .txt small{color:var(--suave)}
-.selo{font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap}
-.s-pendente{background:#eceae4;color:var(--suave)}.s-andamento{background:#fdf1dc;color:var(--aviso)}.s-pronto{background:#e0f1e6;color:var(--ok)}.s-nao{background:#f6dcdb;color:var(--erro)}
-label.cp{display:block;margin:0 0 10px}label.cp span{display:block;font-size:13px;color:var(--suave);margin-bottom:3px}
-input,select,textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--linha);border-radius:9px;background:#fff;color:var(--texto)}
-input.med{background:var(--campo);font-size:18px;font-variant-numeric:tabular-nums;text-align:right;padding:10px 8px}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--texto);outline-offset:-1px}
-.grade2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grade3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-button.bt{display:block;width:100%;font:600 16px/1 inherit;padding:15px;border-radius:10px;border:1px solid var(--texto);background:var(--texto);color:#fff;margin:8px 0}
-button.bt.sec{background:#fff;color:var(--texto)}button.bt.perigo{background:#fff;color:var(--erro);border-color:var(--erro)}
-button.mini{font:600 14px inherit;padding:8px 12px;border-radius:8px;border:1px solid var(--linha);background:#fff;color:var(--texto)}
-.rodape{position:fixed;left:0;right:0;bottom:0;background:var(--cartao);border-top:1px solid var(--linha);padding:10px 16px calc(env(safe-area-inset-bottom) + 10px);display:flex;gap:10px;z-index:5}
-.rodape button{flex:1;margin:0}
-.passos{display:flex;gap:4px;margin:0 0 14px}.passos i{flex:1;height:4px;border-radius:2px;background:var(--linha)}.passos i.on{background:var(--texto)}
-.ponto{border:1px solid var(--linha);border-radius:10px;padding:10px;margin:0 0 10px;background:#fff}
-.ponto .top{display:flex;align-items:center;gap:8px;margin-bottom:8px}.ponto .top b{flex:1}
-.leit{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.leit input{padding:10px 4px;font-size:16px}
-.rot{font-size:12px;color:var(--suave);margin:6px 0 3px}
-.msg{font-size:13px;margin-top:6px}.msg.aviso{color:var(--aviso)}.msg.erro{color:var(--erro)}.msg.ok{color:var(--ok)}
-input.destoa{border:2px solid var(--erro);background:#fdeceb}input.alerta{border:2px solid var(--aviso)}
-.plat{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto auto;gap:8px;border:2px solid var(--texto);border-radius:10px;padding:10px;background:#fafaf8}
-.plat div{text-align:center}.plat small{display:block;color:var(--suave);font-size:12px}
-.pad{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--linha)}.pad:first-child{border-top:0}
-.pad input[type=checkbox]{width:22px;height:22px;margin-top:2px;flex:none}
-.venc{color:var(--erro);font-weight:600}.vence{color:var(--aviso);font-weight:600}.val{color:var(--ok)}
-.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--texto);border-radius:10px;overflow:hidden}.seg button{font:700 17px inherit;padding:12px;border:0;background:#fff;color:var(--texto)}.seg button.on{background:var(--texto);color:#fff}
-.padsel{border:1px solid var(--linha);border-radius:10px;padding:10px;margin:0 0 10px;background:#fafaf8}.padsel .top{display:flex;gap:8px;align-items:baseline;margin-bottom:4px}.padsel .top span{flex:1;font-size:14px}
-.tabpesos{margin-top:8px}.tabpesos summary{font-size:14px;font-weight:600;cursor:pointer;padding:4px 0}.resumo th{font-size:12px;color:var(--suave);text-align:right;padding:4px 6px}.resumo td{text-align:right}
-.msg.info{color:var(--texto);background:#eef3f8;border-radius:6px;padding:5px 8px;font-variant-numeric:tabular-nums}
-.vazio{color:var(--suave);text-align:center;padding:30px 10px}
-.faixa{font-size:13px;color:var(--suave);margin:-4px 0 12px}
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--texto);color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
-.toast.on{opacity:1}
-video{width:100%;border-radius:10px;background:#000}
-.resumo td{padding:4px 6px;border-bottom:1px solid var(--linha);font-variant-numeric:tabular-nums}.resumo{width:100%;border-collapse:collapse;font-size:14px}
+html,body{margin:0;background:var(--bg);color:var(--label);font:17px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+::selection{background:var(--blue-t);color:var(--label)}
+input,select,textarea,button{font:inherit;color:inherit}
+button{cursor:pointer}
+svg.i{width:1em;height:1em;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+svg.i.cheio{fill:currentColor;stroke:none}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:8px}
+
+/* barras */
+.navbar{position:sticky;top:0;z-index:10;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:calc(var(--safe-t) + 48px);padding:var(--safe-t) 8px 0;background:var(--barra);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid transparent;transition:border-color .2s}
+.navbar.rolou{border-bottom-color:var(--sep)}
+.navbar h1{font-size:17px;font-weight:600;margin:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56vw}
+.navbar .esq{justify-self:start}.navbar .dir{justify-self:end}
+.bt-nav{display:inline-flex;align-items:center;gap:2px;background:none;border:0;color:var(--blue);font-size:17px;padding:10px 8px;min-height:44px}
+.bt-nav svg.i{width:22px;height:22px;stroke-width:2.3}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(var(--safe-b) + 4px);background:var(--barra);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep)}
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:var(--label3);font-size:10px;font-weight:500;padding:3px 0;min-height:44px;position:relative}
+.tabbar button svg.i{width:25px;height:25px;stroke-width:1.7}
+.tabbar button.on{color:var(--blue)}
+.tabbar .ponto-alerta{position:absolute;top:2px;left:calc(50% + 8px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:600;line-height:17px}
+.rodape{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;gap:10px;padding:10px 16px calc(var(--safe-b) + 10px);background:var(--barra);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep)}
+.rodape .bt{flex:1;margin:0}
+
+main{max-width:680px;margin:0 auto;padding:0 16px calc(var(--safe-b) + 112px)}
+body.raiz main{padding-top:calc(var(--safe-t) + 8px)}
+html{scroll-padding-bottom:calc(var(--safe-b) + 120px);scroll-padding-top:70px}
+main input,main button,main textarea,main select{scroll-margin-bottom:calc(var(--safe-b) + 120px)}
+
+/* títulos */
+.titulo-grande{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 4px 14px}
+.titulo-grande h1{font-size:34px;line-height:1.1;font-weight:700;letter-spacing:-.022em;margin:0}
+.titulo-grande .bt-ico{width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:22px;background:var(--blue-t);color:var(--blue)}
+.titulo-grande .bt-ico svg.i{width:24px;height:24px}
+.saudacao{margin:0 4px 12px}
+.saudacao h1{font-size:18px;line-height:1.2;font-weight:600;letter-spacing:-.01em;margin:0}
+.saudacao p{margin:1px 0 0;color:var(--label2);font-size:14px}
+.cab-tela{margin:10px 4px 16px}
+.cab-tela h2{font-size:26px;line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:0;overflow-wrap:anywhere}
+.cab-tela p{margin:4px 0 0;color:var(--label2);font-size:15px}
+
+/* grupos e listas */
+.grupo{margin:0 0 26px}
+.grupo>h3{font-size:13px;font-weight:400;text-transform:uppercase;letter-spacing:.02em;color:var(--label2);margin:0 16px 7px}
+.grupo>.nota{font-size:13px;color:var(--label2);margin:7px 16px 0;line-height:1.4}
+.lista{background:var(--card);border-radius:var(--raio);overflow:hidden}
+.linha{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:11px 14px 11px 16px;background:none;border:0;text-align:left;position:relative}
+.linha+.linha::before{content:"";position:absolute;top:0;right:0;left:16px;border-top:.5px solid var(--sep)}
+.linha.com-ico+.linha.com-ico::before{left:66px}
+button.linha:active,.linha[data-id]:active,.linha[data-k]:active,.linha[data-v]:active{background:var(--fill)}
+.linha .txt{flex:1;min-width:0}
+.linha .txt b{display:block;font-weight:600;font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+.linha .txt small{display:block;color:var(--label2);font-size:14px;margin-top:2px}
+.linha .chev{color:var(--label3);width:15px;height:15px;stroke-width:2.4}
+.linha.acao{color:var(--blue);font-weight:500}
+.linha.acao svg.i{width:22px;height:22px}
+.linha.perigo{color:var(--red);justify-content:center;font-weight:500}
+.tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;flex:none;background:var(--blue-t);color:var(--blue)}
+.tile svg.i{width:22px;height:22px}
+.tile.cinza{background:var(--fill);color:var(--label2)}.tile.vermelho{background:var(--red-t);color:var(--red)}.tile.verde{background:var(--green-t);color:var(--green)}.tile.laranja{background:var(--orange-t);color:var(--orange)}
+.pill{font-size:12px;font-weight:600;padding:4px 9px;border-radius:99px;white-space:nowrap;background:var(--fill);color:var(--label2);letter-spacing:.01em}
+.pill.azul{background:var(--blue-t);color:var(--blue)}.pill.laranja{background:var(--orange-t);color:var(--orange)}.pill.verde{background:var(--green-t);color:var(--green)}.pill.vermelho{background:var(--red-t);color:var(--red)}
+.vazio{padding:28px 20px;text-align:center;color:var(--label2);font-size:15px}
+.vazio svg.i{width:40px;height:40px;color:var(--label3);margin-bottom:8px}
+
+/* início */
+.destaque{background:var(--card);border-radius:16px;padding:12px 13px 13px;margin:0 0 9px;box-shadow:var(--sombra)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;padding:4px 9px;border-radius:8px;background:var(--blue-t);color:var(--blue)}
+.chip svg.i{width:15px;height:15px}
+.chip.verde{background:var(--green-t);color:var(--green)}.chip.cinza{background:var(--fill);color:var(--label2)}
+.destaque .cli{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;margin-top:10px}
+.destaque .cli>div{min-width:0}
+.destaque h2{font-size:15.5px;line-height:1.28;font-weight:600;letter-spacing:0;margin:0;max-width:13em;overflow-wrap:anywhere}
+.destaque .os{color:var(--label2);font-size:13px;margin-top:2px}
+.destaque .cli .tile{align-self:end;width:54px;height:54px;border-radius:14px;margin-bottom:2px}.destaque .tile svg.i{width:30px;height:30px}
+.destaque .prog{margin:10px 0 0;padding-top:10px;border-top:.5px solid var(--sep)}
+.prog{margin:14px 0 0}
+.prog span{display:block;font-size:13px;margin-bottom:6px}
+.barra-prog{height:6px;border-radius:3px;background:var(--fill);overflow:hidden}
+.barra-prog i{display:block;height:100%;border-radius:4px;background:var(--blue)}
+.proximo{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:.5px solid var(--sep)}
+.proximo .tile{width:32px;height:32px;border-radius:8px}.proximo .tile svg.i{width:19px;height:19px}
+.proximo small{display:block;color:var(--label2);font-size:11.5px}
+.proximo b{font-weight:500;font-size:14px}
+.destaque .bt{min-height:44px;font-size:15px;margin-top:10px;border-radius:10px}
+.proximo .pill{margin-left:6px;vertical-align:1px}
+.atalhos{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin:0 0 10px}
+.atalho{min-width:0;display:flex;align-items:center;gap:9px;background:var(--card);border:0;border-radius:var(--raio);padding:8px 8px 8px 10px;text-align:left;box-shadow:var(--sombra);min-height:56px}
+.atalho .tile{width:34px;height:34px;border-radius:9px}.atalho .tile svg.i{width:20px;height:20px}
+.atalho .pill{font-size:11.5px;padding:2px 8px}
+.atalho .txt{flex:1;min-width:0}
+.atalho b{display:block;font-weight:500;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lista-inicio{background:var(--card);border-radius:var(--raio);box-shadow:var(--sombra);overflow:hidden;margin:0 0 26px}
+.lista-inicio h3{font-size:13px;font-weight:400;color:var(--label2);margin:0;padding:10px 14px 2px}
+.lista-inicio .linha{padding:9px 12px 9px 14px;min-height:0}
+.lista-inicio .linha .txt b{font-size:14px;font-weight:500;line-height:1.25}
+.lista-inicio .linha .txt small{font-size:12.5px}
+.lista-inicio .tile{width:34px;height:34px;border-radius:9px}.lista-inicio .tile svg.i{width:20px;height:20px}
+.lista-inicio .linha.com-ico+.linha.com-ico::before{left:60px}
+.lista-inicio .pill{font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:3px 8px}
+.atalho .pill{display:inline-block;margin-top:5px}
+.atalho .chev{color:var(--label3);width:14px;height:14px;stroke-width:2.4}
+.fab{position:fixed;right:max(14px,calc(50% - 324px));bottom:calc(var(--safe-b) + 70px);z-index:9;width:50px;height:50px;border-radius:25px;border:0;background:var(--blue);color:#fff;display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,0,0,.2),0 2px 4px rgba(0,0,0,.12)}
+.fab svg.i{width:25px;height:25px;stroke-width:2}
+.fab:active{transform:scale(.94)}
+
+/* botões */
+.bt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;padding:0 18px;border-radius:13px;border:0;background:var(--blue);color:#fff;font-size:17px;font-weight:600;margin:14px 0 0}
+.bt svg.i{width:21px;height:21px}
+.bt:active{opacity:.82}
+.bt.cinza{background:var(--fill);color:var(--blue)}
+.bt:disabled{opacity:.45}
+.mini{display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:0 12px;border-radius:17px;border:0;background:var(--fill);color:var(--blue);font-size:15px;font-weight:500}
+.mini svg.i{width:17px;height:17px}
+.mini.icone{width:34px;padding:0;justify-content:center;color:var(--label2)}
+.mini:disabled{opacity:.45}
+
+/* formulários */
+.form{background:var(--card);border-radius:var(--raio);padding:14px 16px 4px}
+.campo{display:block;margin:0 0 12px}
+.campo>span{display:block;font-size:13px;color:var(--label2);margin:0 0 5px}
+.campo input,.campo select,.campo textarea,.form>select{width:100%;min-height:46px;padding:10px 12px;border:0;border-radius:10px;background:var(--fill2);font-size:17px;appearance:none;-webkit-appearance:none}
+.campo textarea{min-height:88px;resize:vertical}
+.campo select,.form>select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:18px;padding-right:36px}
+.form>select{margin:0 0 12px;color:var(--blue);font-weight:500}
+input.med{background:var(--campo);text-align:right;font-variant-numeric:tabular-nums;font-size:19px;font-weight:500;padding:10px}
+input.med:focus{background:var(--card);box-shadow:inset 0 0 0 2px var(--blue);outline:none}
+input.destoa,input.destoa:focus{background:var(--red-t);box-shadow:inset 0 0 0 2px var(--red);color:var(--red)}
+.grade2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.grade3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 8px}
+.seg{display:grid;grid-template-columns:1fr 1fr;padding:2px;border-radius:10px;background:var(--fill)}
+.seg button{border:0;background:none;border-radius:8px;min-height:36px;font-size:15px;font-weight:600;color:var(--label)}
+.seg button.on{background:var(--elev);box-shadow:0 1px 3px rgba(0,0,0,.14),0 1px 1px rgba(0,0,0,.06)}
+.interruptor{position:relative;width:51px;height:31px;flex:none;appearance:none;-webkit-appearance:none;margin:0;border-radius:16px;background:var(--fill);transition:background .2s}
+.interruptor::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.interruptor:checked{background:var(--green)}.interruptor:checked::after{transform:translateX(20px)}
+
+/* passos do instrumento */
+.passo-cab{margin:8px 4px 16px}
+.passo-cab small{font-size:13px;color:var(--label2);font-weight:500}
+.passo-cab h2{font-size:26px;line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:2px 0 12px}
+.trilho{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.trilho i{height:5px;border-radius:3px;background:var(--fill)}.trilho i.on{background:var(--blue);opacity:.4}.trilho i.atual{background:var(--blue)}
+.ponto{background:var(--card);border-radius:var(--raio);padding:12px 14px 10px;margin:0 0 12px}
+.ponto .top{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+.ponto .top b{flex:1;font-size:17px;font-weight:600}
+.ponto .campo{margin-bottom:8px}
+.rot{font-size:13px;color:var(--label2);margin:4px 0 5px}
+.leit{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.leit input{width:100%;min-height:44px;border:0;border-radius:10px;font-size:17px;padding:8px}
+.plat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px;border-radius:12px;background:var(--fill2);position:relative}
+.plat::before{content:"";position:absolute;inset:9px;border:1.5px dashed var(--sep);border-radius:9px;pointer-events:none}
+.plat div{text-align:center;position:relative}
+.plat small{display:block;color:var(--label2);font-size:12px;font-weight:600;margin-bottom:3px}
+.plat input{width:100%;min-height:44px;border:0;border-radius:10px;padding:8px}
+.padsel{padding:12px 14px;position:relative}
+.padsel+.padsel::before{content:"";position:absolute;top:0;left:14px;right:0;border-top:.5px solid var(--sep)}
+.padsel .top{display:flex;align-items:flex-start;gap:10px}
+.padsel .top div{flex:1;min-width:0}
+.padsel .top b{font-weight:600}.padsel .top .desc{display:block;font-size:15px;color:var(--label);margin-top:3px}.padsel .top .pill{margin-left:6px;vertical-align:1px}
+.padsel small{display:block;color:var(--label2);font-size:13px;margin-top:3px}
+.venc{color:var(--red)!important;font-weight:600}.vence{color:var(--orange)!important;font-weight:600}.val{color:var(--green)!important}
+.tabpesos{margin-top:10px}
+.tabpesos summary{list-style:none;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:var(--blue);cursor:pointer;min-height:32px}
+.tabpesos summary::-webkit-details-marker{display:none}
+.tabpesos summary svg.i{width:14px;height:14px;stroke-width:2.6;transition:transform .2s}
+.tabpesos[open] summary svg.i{transform:rotate(90deg)}
+.resumo{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;margin-top:4px}
+.resumo th{font-size:12px;font-weight:500;color:var(--label2);text-align:right;padding:4px 6px}
+.resumo td{text-align:right;padding:5px 6px;border-top:.5px solid var(--sep)}
+.resumo th:first-child,.resumo td:first-child{text-align:left}
+
+/* mensagens */
+.msg{display:flex;gap:7px;align-items:flex-start;font-size:14px;line-height:1.35;margin-top:7px}
+.msg:empty{display:none}
+.msg svg.i{width:17px;height:17px;margin-top:1px}
+.msg.erro{color:var(--red)}.msg.aviso{color:var(--orange)}.msg.ok{color:var(--green)}
+.msg.info{color:var(--label);background:var(--blue-t);border-radius:9px;padding:7px 10px;font-variant-numeric:tabular-nums}
+.msg.info svg.i{color:var(--blue)}
+.conf .msg{margin:0;padding:11px 0;border-top:.5px solid var(--sep);font-size:15px}
+.conf .msg:first-child{border-top:0}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 92px);transform:translate(-50%,8px);background:rgba(28,28,30,.94);color:#fff;padding:11px 18px;border-radius:14px;font-size:15px;font-weight:500;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:30;max-width:calc(100vw - 48px);text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:#000;display:block}
+.perfil-cab{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:var(--raio);padding:14px 16px;margin:0 0 26px}
+.avatar{width:60px;height:60px;border-radius:30px;display:grid;place-items:center;background:linear-gradient(#9aa0ab,#7b818c);color:#fff;font-size:24px;font-weight:600;flex:none}
+.perfil-cab b{display:block;font-size:20px;font-weight:600}.perfil-cab small{color:var(--label2);font-size:15px}
+
+/* troca de tela */
+@keyframes entraPush{from{transform:translateX(28%);opacity:0}to{transform:none;opacity:1}}
+@keyframes entraVolta{from{transform:translateX(-18%);opacity:0}to{transform:none;opacity:1}}
+@keyframes entraTab{from{opacity:0}to{opacity:1}}
+main.push{animation:entraPush .32s cubic-bezier(.2,.85,.25,1)}
+main.volta{animation:entraVolta .28s cubic-bezier(.2,.85,.25,1)}
+main.tab{animation:entraTab .18s ease-out}
+@media (prefers-reduced-motion: reduce){main.push,main.volta,main.tab{animation:none}.barra-prog i,.interruptor,.interruptor::after{transition:none}}
 </style>
 </head>
 <body>
-<header><button id="voltar" hidden aria-label="Voltar">‹ Voltar</button><h1 id="titulo">Calibração em campo</h1><button id="menu-bt" aria-label="Menu" aria-expanded="false">☰</button></header>
-<div id="veu" hidden></div>
-<nav id="menu" aria-label="Menu principal"></nav>
+<header class="navbar" id="navbar" hidden><div class="esq"><button class="bt-nav" id="voltar"></button></div><h1 id="titulo"></h1><div class="dir" id="nav-dir"></div></header>
 <main id="tela"></main>
+<button class="fab" id="fab" hidden aria-label="Ler QR do PCP"></button>
+<nav class="tabbar" id="tabbar" aria-label="Seções"></nav>
 <div class="rodape" id="rodape" hidden></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="jsQR.js" defer></script>
 <script>
@@ -89,13 +238,39 @@ const CHAVE = 'campo-v1';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+// ---------- ícones (traço único, no estilo dos símbolos do iPhone) ----------
+const ICONES = {
+  casa: '<path d="M3.5 10.5 12 3.8l8.5 6.7"/><path d="M5.5 9v10.2c0 .4.3.8.8.8H10v-5.5h4V20h3.7c.5 0 .8-.4.8-.8V9"/>',
+  lista: '<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9h17M8 3v3M16 3v3M7.5 13h3M7.5 16.5h6"/>',
+  balanca: '<path d="M12 4v16M7 20h10M5 7h14"/><path d="M5 7 2.5 13a3 3 0 0 0 5 0L5 7ZM19 7l-2.5 6a3 3 0 0 0 5 0L19 7Z"/><circle cx="12" cy="4" r="1"/>',
+  peso: '<path d="M9 7.5a3 3 0 1 1 6 0"/><path d="M6.2 9h11.6l2.1 10.2c.1.5-.3.8-.7.8H4.8c-.4 0-.8-.3-.7-.8L6.2 9Z"/>',
+  pessoa: '<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.2c.8-3.6 3.8-5.7 7.5-5.7s6.7 2.1 7.5 5.7"/>',
+  qr: '<path d="M4 8V5.5C4 4.7 4.7 4 5.5 4H8M16 4h2.5c.8 0 1.5.7 1.5 1.5V8M20 16v2.5c0 .8-.7 1.5-1.5 1.5H16M8 20H5.5C4.7 20 4 19.3 4 18.5V16"/><path d="M4 12h16"/>',
+  relogio: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  chevDir: '<path d="m9 5 7 7-7 7"/>',
+  chevEsq: '<path d="m15 5-7 7 7 7"/>',
+  mais: '<path d="M12 5v14M5 12h14"/>',
+  lixo: '<path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l.8 11.2c.1 1 .9 1.8 1.9 1.8h5.6c1 0 1.8-.8 1.9-1.8L17.5 7M9.5 7V5.2c0-.4.3-.7.7-.7h3.6c.4 0 .7.3.7.7V7"/>',
+  alerta: '<path d="M10.3 4.3 2.9 17.5c-.8 1.3.2 3 1.7 3h14.8c1.5 0 2.5-1.7 1.7-3L13.7 4.3c-.8-1.3-2.6-1.3-3.4 0Z"/><path d="M12 9.5v4.2M12 17h.01"/>',
+  ok: '<circle cx="12" cy="12" r="8.5"/><path d="m8.3 12.3 2.5 2.5 5-5.3"/>',
+  erro: '<circle cx="12" cy="12" r="8.5"/><path d="m9.2 9.2 5.6 5.6M14.8 9.2l-5.6 5.6"/>',
+  info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>',
+  indicador: '<rect x="3.5" y="5" width="17" height="10" rx="2"/><path d="M7 9.5h5M15 9.5h2M9 15v4M15 15v4M7 19h10"/>',
+  enviar: '<path d="M12 15V3.8M7.5 8 12 3.5 16.5 8"/><path d="M5 12.5v6c0 .8.7 1.5 1.5 1.5h11c.8 0 1.5-.7 1.5-1.5v-6"/>',
+  arquivo: '<path d="M14 3.5H7c-.8 0-1.5.7-1.5 1.5v14c0 .8.7 1.5 1.5 1.5h10c.8 0 1.5-.7 1.5-1.5V8L14 3.5Z"/><path d="M14 3.5V8h4.5"/>',
+  repetir: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"/><path d="M4 20v-4.5h4.5"/>',
+  bloqueio: '<circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/>'
+};
+const ico = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONES[n] || ''}</svg>`;
+const CHEV = ico('chevDir', 'chev');
+
 // ---------- armazenamento ----------
 let db = { perfil: { nome: '', apelido: '', padroes: PADROES_PADRAO, kit: [] }, visitas: [] };
 try { const s = localStorage.getItem(CHAVE); if (s) db = Object.assign(db, JSON.parse(s)); } catch (e) {}
 function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(db)); } catch (e) { toast('Não consegui salvar no celular'); } }
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
 
-function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2400); }
 function num(s) { if (s === '' || s == null) return null; const v = parseFloat(String(s).replace(/\s/g, '').replace(',', '.')); return isNaN(v) ? null : v; }
 function fmt(v, c) { if (v == null) return ''; return c == null ? String(v).replace('.', ',') : v.toFixed(c).replace('.', ','); }
 function hojeISO() { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); }
@@ -105,140 +280,199 @@ function parseBR(s) { const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s || ''); ret
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function casasDe(div) { const s = String(div ?? '').match(/[\d.,]+/); if (!s) return null; const t = s[0].replace(',', '.'); return t.includes('.') ? t.split('.')[1].length : 0; }
 function divisaoNum(div) { const s = String(div ?? '').match(/[\d.,]+/); return s ? num(s[0]) : null; }
+const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
 // situação do padrão na data da calibração
 function situacaoPadrao(p, dataISO) {
-  const v = parseBR(p.validade); if (!v) return { cls: 'vence', txt: 'sem validade cadastrada' };
+  const v = parseBR(p.validade); if (!v) return { cls: 'vence', txt: 'sem validade cadastrada', curto: 'sem validade', pill: 'laranja', nivel: 1 };
   const d = dataISO ? new Date(dataISO.slice(0, 10) + 'T12:00') : new Date();
   const dias = Math.floor((v - d) / 864e5);
-  if (dias < 0) return { cls: 'venc', txt: `VENCIDO em ${p.validade}`, nivel: 2 };
-  if (dias <= 30) return { cls: 'vence', txt: `vence em ${dias} dia(s), ${p.validade}`, nivel: 1 };
-  return { cls: 'val', txt: `válido até ${p.validade}`, nivel: 0 };
+  if (dias < 0) return { cls: 'venc', txt: `vencido em ${p.validade}`, curto: 'Vencido', pill: 'vermelho', nivel: 2 };
+  if (dias <= 30) return { cls: 'vence', txt: `vence em ${plural(dias, 'dia', 'dias')}, ${p.validade}`, curto: `${dias} dias`, pill: 'laranja', nivel: 1 };
+  return { cls: 'val', txt: `válido até ${p.validade}`, curto: 'Válido', pill: 'verde', nivel: 0 };
 }
+function alertasPadroes() { return db.perfil.padroes.filter(x => (situacaoPadrao(x).nivel || 0) === 2).length; }
 
 // ---------- navegação ----------
-let rota = { tela: 'inicio' };
-function ir(r) { rota = r; history.pushState(r, ''); desenha(); window.scrollTo(0, 0); }
-window.onpopstate = e => { rota = e.state || { tela: 'inicio' }; desenha(); };
+const ABAS = [['inicio', 'Início', 'casa'], ['visitas', 'Visitas', 'lista'], ['instrumentos', 'Instrumentos', 'balanca'], ['padroes', 'Padrões', 'peso'], ['perfil', 'Perfil', 'pessoa']];
+const RAIZ = new Set(ABAS.map(a => a[0]));
+let rota = { tela: 'inicio' }, direcao = 'tab';
+function ir(r) { direcao = RAIZ.has(r.tela) ? 'tab' : 'push'; rota = r; history.pushState(r, ''); desenha(); window.scrollTo(0, 0); }
+window.onpopstate = e => { direcao = 'volta'; rota = e.state || { tela: 'inicio' }; desenha(); };
 $('#voltar').onclick = () => history.back();
-// ---------- menu ----------
-function alertasPadroes() { return db.perfil.padroes.filter(x => (situacaoPadrao(x).nivel || 0) > 0).length; }
-function abreMenu(abrir) {
-  const m = $('#menu');
-  if (abrir) {
-    const pend = db.visitas.flatMap(v => v.instrumentos).filter(i => i.situacao === 'pendente' || i.situacao === 'andamento').length;
-    const al = alertasPadroes(), atual = rota.tela;
-    const item = (tela, ic, txt, cont, cls) => `<button data-ir="${tela}" class="${atual === tela ? 'atual' : ''}"><i>${ic}</i><span>${txt}</span>${cont != null ? `<em class="cont ${cls || ''}">${cont}</em>` : ''}</button>`;
-    m.innerHTML = `<div class="quem"><b>${esc(db.perfil.nome || 'Técnico sem nome')}</b><small>${db.visitas.length} visita(s) no celular</small></div>
-      ${item('inicio', '⌂', 'Visitas', db.visitas.length)}
-      ${item('instrumentos', '⚖', 'Instrumentos', pend ? pend + ' a fazer' : null)}
-      ${item('padroes', '◎', 'Padrões', al ? al + ' alerta(s)' : db.perfil.padroes.length, al ? 'alerta' : '')}
-      ${item('ler', '▣', 'Receber ordem do PCP')}
-      ${item('novaVisita', '+', 'Nova visita')}
-      ${item('perfil', '☺', 'Meu perfil')}
-      <div class="rod">Os dados ficam só neste celular até você enviar a visita ao laboratório.</div>`;
-    m.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => { abreMenu(false); if (b.dataset.ir !== rota.tela) ir({ tela: b.dataset.ir }); });
-  }
-  m.classList.toggle('aberto', abrir); $('#veu').hidden = !abrir; $('#menu-bt').setAttribute('aria-expanded', abrir);
-}
-$('#menu-bt').onclick = () => abreMenu(!$('#menu').classList.contains('aberto'));
-$('#veu').onclick = () => abreMenu(false);
+window.addEventListener('scroll', () => $('#navbar').classList.toggle('rolou', scrollY > 4), { passive: true });
 
 function visita(id) { return db.visitas.find(v => v.id === id); }
 function rodape(botoes) {
   const r = $('#rodape');
   if (!botoes) { r.hidden = true; r.innerHTML = ''; return; }
   r.hidden = false; r.innerHTML = '';
-  for (const [txt, fn, cls] of botoes) { const b = document.createElement('button'); b.className = 'bt ' + (cls || ''); b.textContent = txt; b.onclick = fn; r.appendChild(b); }
+  for (const [txt, fn, cls, icone] of botoes) { const b = document.createElement('button'); b.className = 'bt ' + (cls || ''); b.innerHTML = (icone ? ico(icone) : '') + `<span>${txt}</span>`; b.onclick = fn; r.appendChild(b); }
+}
+function navbar(titulo, voltaTxt, direita) {
+  $('#navbar').hidden = false;
+  $('#titulo').textContent = titulo;
+  $('#voltar').innerHTML = voltaTxt === 'Cancelar' ? 'Cancelar' : ico('chevEsq') + `<span>${esc(voltaTxt || 'Voltar')}</span>`;
+  $('#nav-dir').innerHTML = direita || '';
+}
+function desenhaAbas() {
+  const al = alertasPadroes();
+  $('#tabbar').innerHTML = ABAS.map(([t, nome, ic]) => `<button data-tab="${t}" class="${rota.tela === t ? 'on' : ''}" ${rota.tela === t ? 'aria-current="page"' : ''}>${ico(ic)}<span>${nome}</span>${t === 'padroes' && al ? `<em class="ponto-alerta" aria-label="${al} vencido">${al}</em>` : ''}</button>`).join('');
+  $('#tabbar').querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { if (b.dataset.tab !== rota.tela) ir({ tela: b.dataset.tab }); else window.scrollTo({ top: 0, behavior: 'smooth' }); });
 }
 
 function desenha() {
-  $('#voltar').hidden = rota.tela === 'inicio';
   const t = $('#tela'); t.oninput = t.onchange = t.onclick = null;
-  abreMenu(false);
-  ({ inicio: telaInicio, instrumentos: telaInstrumentos, padroes: telaPadroes, perfil: telaPerfil, visita: telaVisita, instrumento: telaInstrumento, ler: telaLer, novaVisita: telaNovaVisita })[rota.tela]();
+  const raiz = RAIZ.has(rota.tela);
+  document.body.classList.toggle('raiz', raiz);
+  $('#navbar').hidden = raiz; $('#tabbar').hidden = !raiz || rota.tela === undefined;
+  $('#fab').hidden = !(rota.tela === 'inicio' || rota.tela === 'visitas');
+  rodape(null);
+  if (raiz) desenhaAbas();
+  t.classList.remove('push', 'volta', 'tab'); void t.offsetWidth; t.classList.add(direcao);
+  ({ inicio: telaInicio, visitas: telaVisitas, instrumentos: telaInstrumentos, padroes: telaPadroes, perfil: telaPerfil, visita: telaVisita, instrumento: telaInstrumento, ler: telaLer, novaVisita: telaNovaVisita })[rota.tela]();
 }
+$('#fab').innerHTML = ico('qr');
+$('#fab').onclick = () => ir({ tela: 'ler' });
+
+// ---------- situação das visitas ----------
+const SIT = { pendente: ['', 'A fazer'], andamento: ['laranja', 'Medindo'], pronto: ['verde', 'Pronta'], nao_calibrado: ['vermelho', 'Não calibrada'] };
+function contaVisita(v) { const n = v.instrumentos.length, prontos = v.instrumentos.filter(i => ['pronto', 'nao_calibrado'].includes(i.situacao)).length; return { n, prontos }; }
+function faseVisita(v) {
+  const { n, prontos } = contaVisita(v);
+  if (v.enviada) return 'enviada';
+  if (n && prontos === n) return 'pronta';
+  if (v.instrumentos.some(i => i.situacao !== 'pendente')) return 'andamento';
+  return 'afazer';
+}
+const FASE = { andamento: ['laranja', 'Medindo', 'Em andamento'], afazer: ['', 'A fazer', 'A fazer'], pronta: ['verde', 'Pronta', 'Prontas para enviar'], enviada: ['azul', 'Enviada', 'Enviadas'] };
+function resumoVisita(v) { const { n, prontos } = contaVisita(v); return [v.os ? 'OS ' + esc(v.os) : null, plural(n, 'balança', 'balanças'), prontos ? plural(prontos, 'pronta', 'prontas') : null].filter(Boolean).join(' · '); }
+function linhaVisita(v) {
+  const f = faseVisita(v), [cor, rot] = FASE[f];
+  return `<button class="linha com-ico" data-id="${v.id}"><span class="tile ${f === 'andamento' ? '' : f === 'pronta' ? 'verde' : 'cinza'}">${ico('balanca')}</span><span class="txt"><b>${esc(v.cliente.nome || 'Cliente sem nome')}</b><small>${resumoVisita(v)}</small></span><span class="pill ${cor}">${rot}</span>${CHEV}</button>`;
+}
+function ordenaVisitas() { return db.visitas.slice().sort((a, b) => (b.criada || '').localeCompare(a.criada || '')); }
+function ligaLinhasVisita() { document.querySelectorAll('.linha[data-id]').forEach(el => el.onclick = () => ir({ tela: 'visita', id: el.dataset.id })); }
+function proximoInstrumento(v) { let k = v.instrumentos.findIndex(i => i.situacao === 'andamento'); if (k < 0) k = v.instrumentos.findIndex(i => i.situacao === 'pendente'); return k; }
 
 // ---------- início ----------
-function statusVisita(v) {
-  const n = v.instrumentos.length, prontos = v.instrumentos.filter(i => ['pronto', 'nao_calibrado'].includes(i.situacao)).length;
-  if (v.enviada) return ['s-pronto', 'enviada'];
-  if (n && prontos === n) return ['s-pronto', 'pronta para enviar'];
-  if (v.instrumentos.some(i => i.situacao === 'andamento' || i.situacao === 'pronto')) return ['s-andamento', `${prontos}/${n}`];
-  return ['s-pendente', `${n} instrumento(s)`];
-}
+function saudacao() { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; }
+function dataLonga() { return new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).replace('-feira', ''); }
 function telaInicio() {
-  $('#titulo').textContent = 'Calibração em campo';
-  const semPerfil = !db.perfil.nome;
-  const lista = db.visitas.slice().sort((a, b) => (b.criada || '').localeCompare(a.criada || ''));
+  const nome = db.perfil.apelido || (db.perfil.nome || '').split(' ')[0];
+  const abertas = ordenaVisitas().filter(v => !v.enviada);
+  const foco = abertas.find(v => faseVisita(v) === 'andamento') || abertas.find(v => faseVisita(v) === 'afazer') || abertas[0];
+  const outras = abertas.filter(v => v !== foco);
+  const pend = db.visitas.filter(v => !v.enviada).flatMap(v => v.instrumentos).filter(i => i.situacao === 'pendente' || i.situacao === 'andamento').length;
+  const venc = alertasPadroes();
+  let destaque;
+  if (foco) {
+    const { n, prontos } = contaVisita(foco), f = faseVisita(foco), k = proximoInstrumento(foco), prox = k >= 0 ? foco.instrumentos[k] : null;
+    const chip = f === 'pronta' ? `<span class="chip verde">${ico('ok')}Pronta para enviar</span>` : f === 'andamento' ? `<span class="chip">${ico('relogio')}Em andamento</span>` : `<span class="chip cinza">${ico('relogio')}A fazer</span>`;
+    const pc = prox ? prox.cadastro : null;
+    destaque = `<section class="destaque" aria-label="Visita atual">${chip}
+      <div class="cli"><div><h2>${esc(foco.cliente.nome || 'Cliente sem nome')}</h2><div class="os">${foco.os ? 'OS ' + esc(foco.os) : 'Aberta no campo'}</div>
+        <div class="prog"><span>${prontos} de ${plural(n, 'balança pronta', 'balanças prontas')}</span><div class="barra-prog" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${prontos}"><i style="width:${n ? Math.round(prontos / n * 100) : 0}%"></i></div></div></div><span class="tile">${ico('balanca')}</span></div>
+      ${prox ? `<div class="proximo"><span class="tile cinza">${ico('indicador')}</span><div><small>Próximo instrumento</small><b>${esc([pc.n_metrologico || 'Sem tag', [pc.fabricante, pc.modelo].filter(Boolean).join(' ')].filter(Boolean).join(' · '))}</b><span class="pill ${SIT[prox.situacao][0]}">${SIT[prox.situacao][1].toLowerCase()}</span></div></div>` : ''}
+      <button class="bt" id="continuar">${f === 'pronta' ? ico('enviar') + 'Enviar ao laboratório' : prox && prox.situacao === 'andamento' ? 'Continuar calibração' : 'Começar calibração'}</button></section>`;
+  } else {
+    destaque = `<section class="destaque vazio-destaque"><span class="chip cinza">${ico('info')}Nenhuma visita aberta</span>
+      <div class="cli"><div><h2>Receba a ordem do PCP</h2><div class="os">Aponte a câmera para o QR na tela do PCP. A visita chega com cliente, balanças e padrões.</div></div><span class="tile">${ico('qr')}</span></div>
+      <button class="bt" id="continuar">${ico('qr')}Ler QR do PCP</button></section>`;
+  }
   $('#tela').innerHTML = `
-    ${semPerfil ? `<div class="cartao"><h2>Primeiro uso</h2><p>Cadastre seu nome, que vai no certificado como técnico executante. Isso é feito uma vez só e vale para todas as visitas. Os padrões chegam com o QR do PCP.</p><button class="bt" id="ir-perfil">Cadastrar meu nome</button></div>` : ''}
-    <div class="cartao"><h2>Visitas</h2>
-      ${lista.length ? lista.map(v => { const [c, t] = statusVisita(v); return `<div class="item" data-id="${v.id}"><div class="txt"><b>${esc(v.cliente.nome || 'Cliente sem nome')}</b><small>${dataBR(v.criada)} · ${v.origem === 'pcp' ? 'ordem do PCP' : 'aberta no campo'}${v.os ? ' · OS ' + esc(v.os) : ''}</small></div><span class="selo ${c}">${t}</span></div>`; }).join('')
-      : '<div class="vazio">Nenhuma visita ainda.<br>Leia o QR do PCP ou abra uma visita aqui mesmo.</div>'}
-    </div>`;
+    <header class="saudacao"><h1>${saudacao()}${nome ? ', ' + esc(nome) : ''}</h1><p>${dataLonga()}</p></header>
+    ${!db.perfil.nome ? `<div class="grupo"><div class="lista"><button class="linha com-ico" id="ir-perfil"><span class="tile laranja">${ico('pessoa')}</span><span class="txt"><b>Cadastre seu nome</b><small>Vai no certificado como técnico executante. É feito uma vez só.</small></span>${CHEV}</button></div></div>` : ''}
+    ${destaque}
+    <div class="atalhos">
+      <button class="atalho" data-ir="padroes"><span class="tile ${venc ? 'vermelho' : db.perfil.padroes.length ? 'verde' : 'cinza'}">${ico('peso')}</span><span class="txt"><b>Padrões</b><span class="pill ${venc ? 'vermelho' : db.perfil.padroes.length ? 'verde' : ''}">${venc ? plural(venc, 'vencido', 'vencidos') : db.perfil.padroes.length ? 'em dia' : 'nenhum'}</span></span>${CHEV}</button>
+      <button class="atalho" data-ir="instrumentos"><span class="tile">${ico('balanca')}</span><span class="txt"><b>Instrumentos</b><span class="pill azul">${pend ? pend + ' a fazer' : 'em dia'}</span></span>${CHEV}</button>
+    </div>
+    ${outras.length ? `<section class="lista-inicio"><h3>Próximas visitas</h3>${outras.map(v => { const f = faseVisita(v), [cor, rot] = FASE[f]; return `<button class="linha com-ico" data-id="${v.id}"><span class="tile ${f === 'andamento' ? '' : f === 'pronta' ? 'verde' : 'cinza'}">${ico('balanca')}</span><span class="txt"><b>${esc(v.cliente.nome || 'Cliente sem nome')}</b><small>${[v.os ? 'OS ' + esc(v.os) : null, dataBR(v.criada)].filter(Boolean).join(' · ')}</small></span><span class="pill ${cor}">${rot}</span>${CHEV}</button>`; }).join('')}</section>` : ''}`;
   $('#ir-perfil') && ($('#ir-perfil').onclick = () => ir({ tela: 'perfil' }));
-  document.querySelectorAll('.item[data-id]').forEach(el => el.onclick = () => ir({ tela: 'visita', id: el.dataset.id }));
-  rodape([['Ler QR do PCP', () => ir({ tela: 'ler' })], ['Nova visita', () => ir({ tela: 'novaVisita' }), 'sec']]);
+  document.querySelectorAll('.atalho[data-ir]').forEach(b => b.onclick = () => ir({ tela: b.dataset.ir }));
+  $('#continuar').onclick = () => {
+    if (!foco) return ir({ tela: 'ler' });
+    if (faseVisita(foco) === 'pronta') return enviar(foco);
+    const k = proximoInstrumento(foco); const inst = foco.instrumentos[k];
+    ir({ tela: 'instrumento', id: foco.id, k, passo: inst.campo.passo || 0 });
+  };
+  ligaLinhasVisita();
+}
+
+// ---------- visitas ----------
+function telaVisitas() {
+  const todas = ordenaVisitas(), venc = alertasPadroes();
+  const grupos = ['andamento', 'afazer', 'pronta', 'enviada'].map(f => [f, todas.filter(v => faseVisita(v) === f)]).filter(g => g[1].length);
+  $('#tela').innerHTML = `
+    <div class="titulo-grande"><h1>Visitas</h1><button class="bt-ico" id="ler-topo" aria-label="Ler QR do PCP">${ico('qr')}</button></div>
+    ${venc ? `<div class="grupo"><div class="lista"><button class="linha com-ico" data-ir="padroes"><span class="tile vermelho">${ico('alerta')}</span><span class="txt"><b>${plural(venc, 'padrão vencido', 'padrões vencidos')}</b><small>${db.perfil.padroes.filter(x => situacaoPadrao(x).nivel === 2).map(x => esc(x.codigo + ' ' + x.descricao.toLowerCase())).join(', ')}</small></span>${CHEV}</button></div></div>` : ''}
+    ${grupos.length ? grupos.map(([f, vs]) => `<section class="grupo"><h3>${FASE[f][2]}</h3><div class="lista">${vs.map(linhaVisita).join('')}</div></section>`).join('')
+      : `<div class="grupo"><div class="lista"><div class="vazio">${ico('lista')}<br>Nenhuma visita no celular.<br>Leia o QR do PCP ou abra uma visita aqui.</div></div></div>`}
+    <div class="grupo"><div class="lista"><button class="linha acao" id="nova">${ico('mais')}<span>Nova visita sem ordem do PCP</span></button></div></div>`;
+  $('#ler-topo').onclick = () => ir({ tela: 'ler' });
+  $('#nova').onclick = () => ir({ tela: 'novaVisita' });
+  document.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => ir({ tela: b.dataset.ir }));
+  ligaLinhasVisita();
 }
 
 // ---------- perfil ----------
 function telaPerfil() {
-  $('#titulo').textContent = 'Meu perfil';
   const p = db.perfil;
+  const ini = (p.nome || '?').split(' ').filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() || '?';
   $('#tela').innerHTML = `
-    <div class="cartao"><h2>Técnico</h2>
-      <label class="cp"><span>Nome completo (vai em "Técnico Executante")</span><input id="p-nome" value="${esc(p.nome)}" autocomplete="name"></label>
-      <label class="cp"><span>Como assina como digitador</span><input id="p-apelido" value="${esc(p.apelido)}" placeholder="ex.: Eduardo"></label>
-    </div>
-    <div class="cartao"><h2>Meu kit de padrões</h2><p class="faixa" style="margin:0 0 10px">${p.kit.length ? p.kit.map(esc).join(', ') : 'Nenhum marcado ainda.'}</p><button class="mini" id="ir-padroes">Escolher padrões</button></div>`;
-  const guarda = () => { p.nome = $('#p-nome').value.trim(); p.apelido = $('#p-apelido').value.trim(); salvar(); };
+    <div class="titulo-grande"><h1>Perfil</h1></div>
+    <div class="perfil-cab"><span class="avatar" id="p-ini">${esc(ini)}</span><div><b id="p-mostra">${esc(p.nome || 'Sem nome')}</b><small>Técnico de calibração em campo</small></div></div>
+    <section class="grupo"><h3>Técnico</h3><div class="form">
+      <label class="campo"><span>Nome completo (vai em "Técnico Executante")</span><input id="p-nome" value="${esc(p.nome)}" autocomplete="name" placeholder="Nome e sobrenome"></label>
+      <label class="campo"><span>Como assina como digitador</span><input id="p-apelido" value="${esc(p.apelido)}" placeholder="ex.: Eduardo"></label>
+    </div></section>
+    <section class="grupo"><h3>Kit de padrões</h3><div class="lista"><button class="linha com-ico" id="ir-padroes"><span class="tile">${ico('peso')}</span><span class="txt"><b>Meus padrões</b><small>${p.kit.length ? p.kit.map(esc).join(', ') : 'Os marcados pelo PCP já chegam em cada balança'}</small></span>${CHEV}</button></div></section>
+    <section class="grupo"><h3>Sobre</h3><div class="lista"><div class="linha"><span class="txt"><small style="margin:0">Os dados ficam só neste celular até você enviar a visita ao laboratório. Funciona sem internet.</small></span></div></div></section>`;
+  const guarda = () => { p.nome = $('#p-nome').value.trim(); p.apelido = $('#p-apelido').value.trim(); $('#p-mostra').textContent = p.nome || 'Sem nome'; $('#p-ini').textContent = (p.nome || '?').split(' ').filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() || '?'; salvar(); };
   $('#tela').oninput = $('#tela').onchange = guarda;
   $('#ir-padroes').onclick = () => ir({ tela: 'padroes' });
-  rodape([['Pronto', () => history.back()]]);
 }
 
 // ---------- instrumentos de todas as visitas ----------
 function telaInstrumentos() {
-  $('#titulo').textContent = 'Instrumentos';
-  const todos = db.visitas.flatMap(v => v.instrumentos.map((i, k) => ({ v, i, k })));
+  const todos = db.visitas.filter(v => !v.enviada).flatMap(v => v.instrumentos.map((i, k) => ({ v, i, k })));
   const grupos = [['andamento', 'Em andamento'], ['pendente', 'A fazer'], ['pronto', 'Prontos'], ['nao_calibrado', 'Não calibrados']];
-  $('#tela').innerHTML = todos.length ? grupos.map(([sit, tit]) => {
+  $('#tela').innerHTML = `<div class="titulo-grande"><h1>Instrumentos</h1></div>` + (todos.length ? grupos.map(([sit, tit]) => {
     const g = todos.filter(x => x.i.situacao === sit); if (!g.length) return '';
-    return `<div class="cartao"><h2>${tit} (${g.length})</h2>${g.map(({ v, i, k }) => { const cd = i.cadastro; const [c, t] = SIT[i.situacao]; return `<div class="item" data-v="${v.id}" data-k="${k}"><div class="txt"><b>${esc(cd.n_metrologico || 'Sem tag')}</b><small>${esc(v.cliente.nome || '')} · ${esc([cd.instrumento, cd.fabricante, cd.modelo].filter(Boolean).join(' · '))}</small></div><span class="selo ${c}">${t}</span></div>`; }).join('')}</div>`;
-  }).join('') : '<div class="cartao"><div class="vazio">Nenhum instrumento. Receba uma ordem do PCP.</div></div>';
-  document.querySelectorAll('.item[data-v]').forEach(el => el.onclick = () => ir({ tela: 'instrumento', id: el.dataset.v, k: +el.dataset.k, passo: 0 }));
-  rodape(null);
+    return `<section class="grupo"><h3>${tit}</h3><div class="lista">${g.map(({ v, i, k }) => { const cd = i.cadastro; const [c, t] = SIT[i.situacao]; return `<button class="linha com-ico" data-v="${v.id}" data-k="${k}"><span class="tile ${sit === 'pronto' ? 'verde' : sit === 'andamento' ? '' : 'cinza'}">${ico('indicador')}</span><span class="txt"><b>${esc(cd.n_metrologico || 'Sem tag')}</b><small>${esc(v.cliente.nome || '')} · ${esc([cd.fabricante, cd.modelo].filter(Boolean).join(' ') || cd.instrumento || 'Balança')}</small></span><span class="pill ${c}">${t}</span>${CHEV}</button>`; }).join('')}</div></section>`;
+  }).join('') : `<div class="grupo"><div class="lista"><div class="vazio">${ico('balanca')}<br>Nenhum instrumento a calibrar.<br>Eles chegam com a ordem do PCP.</div></div></div>`);
+  document.querySelectorAll('.linha[data-v]').forEach(el => el.onclick = () => { const v = visita(el.dataset.v), inst = v.instrumentos[+el.dataset.k]; ir({ tela: 'instrumento', id: el.dataset.v, k: +el.dataset.k, passo: inst.campo.passo || 0, de: 'Instrumentos' }); });
 }
 
 // ---------- padrões ----------
+function tabelaPesos(x) {
+  return x.pesos ? `<details class="tabpesos"><summary>${ico('chevDir')}${plural(Object.keys(x.pesos).length, 'peso', 'pesos')} no certificado (${esc(x.unidade_pesos || '')})</summary><table class="resumo"><tr><th>Nominal</th><th>VC</th><th>uest</th><th>upad</th></tr>${Object.entries(x.pesos).map(([n, t]) => `<tr><td>${fmtN(n)}</td><td>${fmtN(t.vc)}</td><td>${fmtN(t.uest)}</td><td>${fmtN(t.upad)}</td></tr>`).join('')}</table></details>` : '';
+}
 function telaPadroes() {
-  $('#titulo').textContent = 'Padrões';
   const p = db.perfil;
   const ordem = p.padroes.slice().sort((a, b) => (situacaoPadrao(b).nivel || 0) - (situacaoPadrao(a).nivel || 0) || a.codigo.localeCompare(b.codigo));
   const cartao = x => {
     const s = situacaoPadrao(x), noKit = p.kit.includes(x.codigo);
-    const tab = x.pesos ? `<details class="tabpesos"><summary>${Object.keys(x.pesos).length} pesos no certificado (${esc(x.unidade_pesos || '')})</summary><table class="resumo"><tr><th>Nominal</th><th>VC</th><th>uest</th><th>upad</th></tr>${Object.entries(x.pesos).map(([n, t]) => `<tr><td>${fmtN(n)}</td><td>${fmtN(t.vc)}</td><td>${fmtN(t.uest)}</td><td>${fmtN(t.upad)}</td></tr>`).join('')}</table></details>` : '';
-    return `<div class="padsel"><div class="top"><b>${esc(x.codigo)}</b><span>${esc(x.descricao)}</span></div>
-      <small>Cert. ${esc(x.certificado)} · ${esc(x.organismo)}</small><br><small class="${s.cls}">${s.txt}</small>${tab}
-      <label class="pad" style="border:0;padding:8px 0 0"><input type="checkbox" data-kit="${esc(x.codigo)}" ${noKit ? 'checked' : ''}><span>No meu kit (vem marcado em cada calibração)</span></label></div>`;
+    return `<div class="padsel"><div class="top"><div><b>${esc(x.codigo)}</b> <span class="pill ${s.pill}">${s.curto}</span><span class="desc">${esc(x.descricao)}</span><small>Cert. ${esc(x.certificado)} · ${esc(x.organismo)}</small><small class="${s.cls}">${s.txt}</small></div>
+      <label style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--label2)"><input type="checkbox" class="interruptor" role="switch" data-kit="${esc(x.codigo)}" ${noKit ? 'checked' : ''} aria-label="${esc(x.codigo)} no meu kit">Kit</label></div>${tabelaPesos(x)}</div>`;
   };
   $('#tela').innerHTML = `
-    ${ordem.length ? `<div class="cartao"><h2>No celular (${ordem.length})</h2>${ordem.map(cartao).join('')}</div>` : '<div class="cartao"><div class="vazio">Nenhum padrão ainda. Eles chegam com a ordem do PCP.</div></div>'}
-    <div class="cartao"><h2>Cadastrar outro padrão</h2>
-      <div class="grade2"><label class="cp"><span>Código</span><input id="n-cod" placeholder="CPP-011"></label><label class="cp"><span>Validade</span><input id="n-val" placeholder="31/03/2027" inputmode="numeric"></label></div>
-      <label class="cp"><span>Descrição</span><input id="n-desc" placeholder="JOGO DE PESOS PADRÃO - F1"></label>
-      <div class="grade2"><label class="cp"><span>Certificado</span><input id="n-cert"></label><label class="cp"><span>Organismo</span><input id="n-org"></label></div>
-      <button class="mini" id="n-add">Adicionar padrão</button>
-    </div>`;
+    <div class="titulo-grande"><h1>Padrões</h1></div>
+    ${ordem.length ? `<section class="grupo"><h3>No celular</h3><div class="lista">${ordem.map(cartao).join('')}</div><p class="nota">"Kit" marca o padrão em toda calibração nova. Os padrões escolhidos pelo PCP já chegam marcados.</p></section>` : `<div class="grupo"><div class="lista"><div class="vazio">${ico('peso')}<br>Nenhum padrão ainda.<br>Eles chegam com a ordem do PCP.</div></div></div>`}
+    <section class="grupo"><h3>Cadastrar outro padrão</h3><div class="form">
+      <div class="grade2"><label class="campo"><span>Código</span><input id="n-cod" placeholder="CPP-011" autocapitalize="characters"></label><label class="campo"><span>Validade</span><input id="n-val" placeholder="31/03/2027" inputmode="numeric"></label></div>
+      <label class="campo"><span>Descrição</span><input id="n-desc" placeholder="Jogo de pesos padrão F1"></label>
+      <div class="grade2"><label class="campo"><span>Certificado</span><input id="n-cert"></label><label class="campo"><span>Organismo</span><input id="n-org"></label></div>
+      <button class="bt cinza" id="n-add" style="margin:0 0 14px">${ico('mais')}Adicionar padrão</button>
+    </div></section>`;
   $('#tela').onchange = e => { const c = e.target.dataset.kit; if (!c) return; p.kit = e.target.checked ? [...new Set([...p.kit, c])] : p.kit.filter(x => x !== c); salvar(); toast(e.target.checked ? `${c} no kit` : `${c} fora do kit`); };
-  rodape(null);
   $('#n-add').onclick = () => {
     const cod = $('#n-cod').value.trim().toUpperCase(); if (!cod) return toast('Informe o código');
     if (!/^\d{2}\/\d{2}\/\d{4}$/.test($('#n-val').value.trim())) return toast('Validade no formato dd/mm/aaaa');
     p.padroes = p.padroes.filter(x => x.codigo !== cod);
     p.padroes.push({ codigo: cod, descricao: $('#n-desc').value.trim().toUpperCase(), certificado: $('#n-cert').value.trim(), validade: $('#n-val').value.trim(), organismo: $('#n-org').value.trim().toUpperCase() });
-    if (!p.kit.includes(cod)) p.kit.push(cod); salvar(); telaPadroes(); toast('Padrão cadastrado');
+    if (!p.kit.includes(cod)) p.kit.push(cod); salvar(); telaPadroes(); desenhaAbas(); toast('Padrão cadastrado');
   };
 }
 
@@ -273,22 +507,24 @@ window.addEventListener('hashchange', checaLink);
 
 let fluxo = null;
 function telaLer() {
-  $('#titulo').textContent = 'Receber ordem do PCP';
+  navbar('Receber ordem', 'Cancelar');
   $('#tela').innerHTML = `
-    <div class="cartao"><h2>Câmera</h2><video id="cam" playsinline muted></video><p class="faixa" id="cam-msg" style="margin-top:8px">Aponte para o QR code na tela do PCP.</p></div>
-    <div class="cartao"><h2>Ou</h2>
-      <label class="cp"><span>Abrir arquivo da ordem (.json) recebido por WhatsApp, AirDrop ou e-mail</span><input type="file" id="arq" accept=".json,application/json,text/plain"></label>
-      <label class="cp"><span>Colar o código</span><textarea id="cola" rows="3"></textarea></label><button class="mini" id="cola-ok">Receber</button>
-    </div>`;
+    <div class="cab-tela"><h2>Leia o QR do PCP</h2><p>Aponte a câmera para o QR na tela do PCP. A visita entra sozinha.</p></div>
+    <section class="grupo"><div class="lista" style="padding:12px"><video id="cam" playsinline muted></video><p class="nota" id="cam-msg" style="margin:10px 4px 2px;text-align:center">Procurando o QR…</p></div></section>
+    <section class="grupo"><h3>Sem câmera</h3><div class="form">
+      <label class="campo"><span>Arquivo da ordem (.json) recebido por WhatsApp, AirDrop ou e-mail</span><input type="file" id="arq" accept=".json,application/json,text/plain"></label>
+      <label class="campo"><span>Ou cole o código</span><textarea id="cola" rows="3"></textarea></label>
+      <button class="bt cinza" id="cola-ok" style="margin:0 0 14px">Receber código</button>
+    </div></section>`;
   $('#arq').onchange = async e => { const f = e.target.files[0]; if (f) { para(); importarOrdem(await f.text()); } };
   $('#cola-ok').onclick = () => { const t = $('#cola').value.trim(); const m = t.match(/#ordem=([^\s]+)/); para(); importarOrdem(m ? m[1] : t); };
-  rodape(null);
   iniciaCamera();
 }
 function para() { if (fluxo) { fluxo.getTracks().forEach(t => t.stop()); fluxo = null; } }
 async function iniciaCamera() {
   const v = $('#cam'); if (!v) return;
-  try { fluxo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); } catch (e) { $('#cam-msg').textContent = 'Câmera indisponível. Use o arquivo ou cole o código.'; return; }
+  try { fluxo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); } catch (e) { const msg = $('#cam-msg'); if (msg) msg.textContent = 'Câmera indisponível. Use o arquivo ou cole o código.'; return; }
+  if (rota.tela !== 'ler') return para();
   v.srcObject = fluxo; await v.play();
   const c = document.createElement('canvas'), ctx = c.getContext('2d', { willReadFrequently: true });
   const laco = () => {
@@ -305,36 +541,36 @@ async function iniciaCamera() {
 
 // ---------- visita sem PCP ----------
 function telaNovaVisita() {
-  $('#titulo').textContent = 'Nova visita';
-  $('#tela').innerHTML = `<div class="cartao"><h2>Cliente</h2>
-    <label class="cp"><span>Nome do cliente</span><input id="c-nome"></label>
-    <label class="cp"><span>Endereço</span><input id="c-end"></label>
-    <label class="cp"><span>Número da OS</span><input id="c-os"></label></div>`;
+  navbar('Nova visita', 'Cancelar');
+  $('#tela').innerHTML = `<div class="cab-tela"><h2>Visita sem ordem</h2><p>Use quando o PCP não mandou a ordem. As balanças você cadastra na próxima tela.</p></div>
+    <section class="grupo"><h3>Cliente</h3><div class="form">
+    <label class="campo"><span>Nome do cliente</span><input id="c-nome" autocapitalize="characters"></label>
+    <label class="campo"><span>Endereço</span><input id="c-end"></label>
+    <label class="campo"><span>Número da OS</span><input id="c-os" inputmode="numeric"></label></div></section>`;
   rodape([['Criar visita', () => {
     const nome = $('#c-nome').value.trim(); if (!nome) return toast('Informe o cliente');
     const v = { id: uid(), origem: 'campo', criada: agoraISO(), os: $('#c-os').value.trim(), cliente: { nome, endereco: $('#c-end').value.trim() }, instrumentos: [] };
-    db.visitas.push(v); salvar(); history.replaceState({ tela: 'inicio' }, ''); ir({ tela: 'visita', id: v.id });
+    db.visitas.push(v); salvar(); history.replaceState({ tela: 'visitas' }, ''); ir({ tela: 'visita', id: v.id });
   }]]);
 }
 
 // ---------- visita ----------
-const SIT = { pendente: ['s-pendente', 'a fazer'], andamento: ['s-andamento', 'em andamento'], pronto: ['s-pronto', 'pronta'], nao_calibrado: ['s-nao', 'não calibrado'] };
 function telaVisita() {
   const v = visita(rota.id); if (!v) return ir({ tela: 'inicio' });
-  $('#titulo').textContent = v.cliente.nome || 'Visita';
+  navbar(v.os ? 'OS ' + v.os : 'Visita', 'Voltar');
+  const { n, prontos } = contaVisita(v);
   $('#tela').innerHTML = `
-    <div class="cartao"><h2>Cliente</h2><b>${esc(v.cliente.nome)}</b><br><small>${esc(v.cliente.endereco || '')}</small>${v.os ? `<br><small>OS ${esc(v.os)}</small>` : ''}</div>
-    <div class="cartao"><h2>Instrumentos</h2>
-      ${v.instrumentos.length ? v.instrumentos.map((i, k) => { const [c, t] = SIT[i.situacao]; const cd = i.cadastro; return `<div class="item" data-k="${k}"><div class="txt"><b>${k + 1}. ${esc(cd.n_metrologico || 'Sem nº metrológico')}</b><small>${esc([cd.instrumento || 'Balança', cd.fabricante, cd.modelo].filter(Boolean).join(' · '))}${cd.faixa_calibrada ? ' · ' + esc(cd.faixa_calibrada) : ''}</small></div><span class="selo ${c}">${t}</span></div>`; }).join('') : '<div class="vazio">Nenhum instrumento.</div>'}
-      <button class="mini" id="add-inst" style="margin-top:10px">+ Balança não prevista na ordem</button>
-    </div>
-    ${v.enviada ? `<p class="faixa">Enviada em ${dataBR(v.enviada)} ${v.enviada.slice(11, 16)}. Pode enviar de novo se corrigir algo.</p>` : ''}
-    <button class="bt perigo" id="apagar">Apagar visita do celular</button>`;
-  document.querySelectorAll('.item[data-k]').forEach(el => el.onclick = () => ir({ tela: 'instrumento', id: v.id, k: +el.dataset.k, passo: 0 }));
+    <div class="cab-tela"><h2>${esc(v.cliente.nome || 'Cliente sem nome')}</h2><p>${[v.os ? 'OS ' + esc(v.os) : 'Aberta no campo', esc(v.cliente.endereco || '')].filter(Boolean).join(' · ')}</p>
+      <div class="prog"><span>${prontos} de ${plural(n, 'balança pronta', 'balanças prontas')}</span><div class="barra-prog"><i style="width:${n ? Math.round(prontos / n * 100) : 0}%"></i></div></div></div>
+    <section class="grupo"><h3>Instrumentos</h3><div class="lista">
+      ${v.instrumentos.map((i, k) => { const [c, t] = SIT[i.situacao]; const cd = i.cadastro; return `<button class="linha com-ico" data-k="${k}"><span class="tile ${i.situacao === 'pronto' ? 'verde' : i.situacao === 'andamento' ? '' : i.situacao === 'nao_calibrado' ? 'vermelho' : 'cinza'}">${ico('indicador')}</span><span class="txt"><b>${esc(cd.n_metrologico || 'Sem tag')}</b><small>${esc([[cd.fabricante, cd.modelo].filter(Boolean).join(' ') || cd.instrumento || 'Balança', cd.faixa_calibrada].filter(Boolean).join(' · '))}</small></span><span class="pill ${c}">${t}</span>${CHEV}</button>`; }).join('')}
+      <button class="linha acao" id="add-inst">${ico('mais')}<span>Balança não prevista na ordem</span></button>
+    </div>${v.enviada ? `<p class="nota">Enviada em ${dataBR(v.enviada)} às ${v.enviada.slice(11, 16)}. Pode enviar de novo se corrigir algo.</p>` : ''}</section>
+    <section class="grupo"><div class="lista"><button class="linha perigo" id="apagar">${ico('lixo')}<span>Apagar visita do celular</span></button></div></section>`;
+  document.querySelectorAll('.linha[data-k]').forEach(el => el.onclick = () => { const inst = v.instrumentos[+el.dataset.k]; ir({ tela: 'instrumento', id: v.id, k: +el.dataset.k, passo: inst.campo.passo || 0 }); });
   $('#add-inst').onclick = () => { v.instrumentos.push(novoInstrumento('balanca', { instrumento: 'BALANÇA' })); salvar(); ir({ tela: 'instrumento', id: v.id, k: v.instrumentos.length - 1, passo: 0 }); };
   $('#apagar').onclick = () => { if (confirm(v.enviada ? 'Apagar esta visita do celular?' : 'Esta visita AINDA NÃO FOI ENVIADA. Apagar mesmo assim?')) { db.visitas = db.visitas.filter(x => x !== v); salvar(); history.back(); } };
-  const prontos = v.instrumentos.filter(i => i.situacao === 'pronto' || i.situacao === 'nao_calibrado').length;
-  rodape([[prontos === v.instrumentos.length && prontos ? 'Enviar ao laboratório' : `Enviar (${prontos}/${v.instrumentos.length} prontas)`, () => enviar(v)]]);
+  rodape([[prontos === n && n ? 'Enviar ao laboratório' : `Enviar (${prontos} de ${n} prontas)`, () => enviar(v), '', 'enviar']]);
 }
 
 // ---------- instrumento: passos ----------
@@ -342,73 +578,70 @@ const PASSOS = ['Identificação', 'Início', 'Pontos de carga', 'Excentricidade
 function telaInstrumento() {
   const v = visita(rota.id); const inst = v && v.instrumentos[rota.k]; if (!inst) return ir({ tela: 'inicio' });
   const p = rota.passo || 0, cd = inst.cadastro, cp = inst.campo;
-  $('#titulo').textContent = `${cd.n_metrologico || 'Balança'} · ${PASSOS[p]}`;
-  const barra = `<div class="passos">${PASSOS.map((_, i) => `<i class="${i <= p ? 'on' : ''}"></i>`).join('')}</div>`;
+  cp.passo = p;
+  navbar(cd.n_metrologico || 'Balança', rota.de || 'Visita');
+  const cab = `<div class="passo-cab"><small>Passo ${p + 1} de 5</small><h2>${PASSOS[p]}</h2><div class="trilho">${PASSOS.map((_, i) => `<i class="${i < p ? 'on' : i === p ? 'atual' : ''}"></i>`).join('')}</div></div>`;
   const un = cd.unidade || 'g';
   let h = '';
   if (p === 0) {
     if (!cp.data_calibracao) { cp.data_calibracao = hojeISO(); salvar(); }
-    const c = (k, r, ph = '') => `<label class="cp"><span>${r}</span><input data-cad="${k}" value="${esc(cd[k])}" placeholder="${ph}"></label>`;
-    h = `<div class="cartao"><h2>Instrumento</h2>
-      ${v.origem === 'pcp' ? '<p class="faixa">Preenchido pelo PCP. Corrija só se o que está na placa for diferente.</p>' : ''}
-      <div class="grade2">${c('instrumento', 'Equipamento', 'BALANÇA')}<label class="cp"><span>Data</span><input type="date" data-campo="data_calibracao" value="${esc(cp.data_calibracao || hojeISO())}"></label></div>
+    const c = (k, r, ph = '') => `<label class="campo"><span>${r}</span><input data-cad="${k}" value="${esc(cd[k])}" placeholder="${ph}"></label>`;
+    h = `<section class="grupo"><h3>Balança</h3><div class="form">
+      <div class="grade2">${c('instrumento', 'Equipamento', 'BALANÇA')}<label class="campo"><span>Data</span><input type="date" data-campo="data_calibracao" value="${esc(cp.data_calibracao || hojeISO())}"></label></div>
       <div class="grade2">${c('n_metrologico', 'Tag (nº metrológico)', 'EM 356')}${c('serie', 'N.S. (nº de série)')}</div>
       <div class="grade2">${c('fabricante', 'Fabricante')}${c('modelo', 'Modelo')}</div>
       ${c('faixa_indicacao', 'Faixa de indicação', '0,000 g a 3200,000 g')}${c('faixa_calibrada', 'Faixa calibrada', '0,000 g a 100,000 g')}
-      <div class="grade2">${c('divisao', 'Valor de uma divisão', '0,001 g')}<label class="cp"><span>Unidade</span><select data-cad="unidade">${['g', 'kg', 'mg', 't'].map(u => `<option ${u === un ? 'selected' : ''}>${u}</option>`).join('')}</select></label></div>
-      <label class="cp"><span>Local da balança no cliente</span><input data-campo="local_texto" value="${esc(cp.local_texto)}" placeholder="ex.: pesagem inoculação"></label>
-    </div>
-    <button class="bt perigo" id="nao-cal">Não foi possível calibrar</button>`;
+      <div class="grade2">${c('divisao', 'Valor de uma divisão', '0,001 g')}<label class="campo"><span>Unidade</span><select data-cad="unidade">${['g', 'kg', 'mg', 't'].map(u => `<option ${u === un ? 'selected' : ''}>${u}</option>`).join('')}</select></label></div>
+      <label class="campo"><span>Local da balança no cliente</span><input data-campo="local_texto" value="${esc(cp.local_texto)}" placeholder="ex.: pesagem inoculação"></label>
+    </div>${v.origem === 'pcp' ? '<p class="nota">Preenchido pelo PCP. Corrija só se o que está na placa for diferente.</p>' : ''}</section>
+    <section class="grupo"><div class="lista"><button class="linha perigo" id="nao-cal">${ico('bloqueio')}<span>Não foi possível calibrar</span></button></div></section>`;
   } else if (p === 1) {
     if (!cp.inicio) { cp.inicio = agoraISO(); cp.data_calibracao = cp.data_calibracao || hojeISO(); if (!cp.padroes_usados.length) cp.padroes_usados = [...db.perfil.kit]; inst.situacao = 'andamento'; salvar(); }
-    h = `<div class="cartao"><h2>Condições ambientais no início</h2>
-      <div class="grade3">${amb('t_inicio', 'T (°C)', cp)}${amb('u_inicio', 'UR (%)', cp)}${amb('p_inicio', 'P (hPa)', cp)}</div>
-      <p class="faixa">Início registrado às ${cp.inicio.slice(11, 16)} de ${dataBR(cp.inicio)}. O tempo de calibração é contado sozinho.</p></div>
-    <div class="cartao"><h2>Padrões usados nesta balança</h2><div id="pads">${padroesHTML(cp)}</div></div>`;
+    h = `<section class="grupo"><h3>Condições ambientais no início</h3><div class="form"><div class="grade3">${amb('t_inicio', 'T (°C)', cp)}${amb('u_inicio', 'UR (%)', cp)}${amb('p_inicio', 'P (hPa)', cp)}</div></div>
+      <p class="nota">Início às ${cp.inicio.slice(11, 16)} de ${dataBR(cp.inicio)}. O tempo de calibração é contado sozinho.</p></section>
+    <section class="grupo"><h3>Padrões usados nesta balança</h3><div id="pads">${padroesHTML(cp)}</div></section>`;
   } else if (p === 2) {
     if (!cp.pontos.length) cp.pontos = [novoPonto()];
     const rt = cp.ref_tipo || 'VN';
-    h = `<div class="cartao"><h2>Referência anotada</h2><div class="seg">${['VN', 'VC'].map(t => `<button data-reftipo="${t}" class="${rt === t ? 'on' : ''}">${t}</button>`).join('')}</div><p class="faixa" style="margin:8px 0 0">${rt === 'VN' ? 'Valor nominal. O VC e as incertezas vêm da tabela do jogo de pesos marcado no início.' : 'Valor convencional do certificado do peso.'}</p></div>
-      <p class="faixa">Unidade: ${esc(un)} · divisão ${esc(cd.divisao || '?')}. VM antes e depois do ajuste; as repetições M2 a M5 só se forem medidas. "= VM" repete a leitura.</p>
+    h = `<section class="grupo"><h3>Referência anotada</h3><div class="seg" role="tablist">${['VN', 'VC'].map(t => `<button role="tab" aria-selected="${rt === t}" data-reftipo="${t}" class="${rt === t ? 'on' : ''}">${t === 'VN' ? 'VN · nominal' : 'VC · convencional'}</button>`).join('')}</div>
+      <p class="nota">${rt === 'VN' ? 'O VC e as incertezas vêm da tabela do jogo de pesos marcado no início.' : 'Valor convencional do certificado do peso.'} Unidade ${esc(un)}, divisão ${esc(cd.divisao || '?')}.</p></section>
       <div id="pontos">${cp.pontos.map((pt, i) => pontoHTML(pt, i, cd, rt)).join('')}</div>
-      <button class="mini" id="add-pt" ${cp.pontos.length >= 10 ? 'disabled' : ''}>+ Ponto (${cp.pontos.length}/10)</button>`;
+      <button class="bt cinza" id="add-pt" ${cp.pontos.length >= 10 ? 'disabled' : ''} style="margin:0">${ico('mais')}Adicionar ponto <span style="color:var(--label2);font-weight:400">(${cp.pontos.length} de 10)</span></button>`;
   } else if (p === 3) {
     const e = cp.excentricidade;
-    const pos = (lado, n) => `<div><small>${n}</small><input class="med" inputmode="decimal" data-exc="${lado}" data-i="${n - 1}" value="${fmt(e[lado][n - 1])}"></div>`;
+    const pos = (lado, n) => `<div><small>${n}</small><input class="med" inputmode="decimal" data-exc="${lado}" data-i="${n - 1}" value="${fmt(e[lado][n - 1])}" aria-label="Posição ${n} ${lado} do ajuste"></div>`;
     const plat = lado => `<div class="plat">${pos(lado, 2)}<div></div>${pos(lado, 5)}<div></div>${pos(lado, 1)}<div></div>${pos(lado, 3)}<div></div>${pos(lado, 4)}</div>`;
     const rte = cp.ref_tipo || 'VN';
-    h = `<div class="cartao"><h2>Carga usada</h2><label class="cp"><span>${rte} da carga de excentricidade (${esc(un)})</span><input class="med" inputmode="decimal" data-excvc value="${fmt(rte === 'VC' ? e.vc : e.nominal)}"></label><div class="msg" id="exc-peso"></div></div>
-      <div class="cartao"><h2>Antes do ajuste</h2>${plat('antes')}<button class="mini" data-igual="antes" style="margin-top:8px">Todas = posição 1</button></div>
-      <div class="cartao"><h2>Depois do ajuste</h2>${plat('depois')}<button class="mini" data-igual="depois" style="margin-top:8px">Todas = posição 1</button><div class="msg" id="exc-msg"></div></div>`;
+    h = `<section class="grupo"><h3>Carga usada</h3><div class="form"><label class="campo"><span>${rte} da carga de excentricidade (${esc(un)})</span><input class="med" inputmode="decimal" data-excvc value="${fmt(rte === 'VC' ? e.vc : e.nominal)}"></label><div class="msg" id="exc-peso" style="margin:-4px 0 12px"></div></div></section>
+      <section class="grupo"><h3>Antes do ajuste</h3><div class="lista" style="padding:12px">${plat('antes')}<button class="mini" data-igual="antes" style="margin-top:10px">${ico('repetir')}Todas iguais à posição 1</button></div></section>
+      <section class="grupo"><h3>Depois do ajuste</h3><div class="lista" style="padding:12px">${plat('depois')}<button class="mini" data-igual="depois" style="margin-top:10px">${ico('repetir')}Todas iguais à posição 1</button><div class="msg" id="exc-msg"></div></div></section>`;
   } else {
     if (!cp.fim) { cp.fim = agoraISO(); salvar(); }
     const min = Math.round((new Date(cp.fim) - new Date(cp.inicio)) / 6e4);
-    h = `<div class="cartao"><h2>Condições ambientais no fim</h2><div class="grade3">${amb('t_fim', 'T (°C)', cp)}${amb('u_fim', 'UR (%)', cp)}${amb('p_fim', 'P (hPa)', cp)}</div><div class="msg" id="amb-msg"></div></div>
-      <div class="cartao"><h2>Observações</h2><textarea data-campo="observacoes" rows="3" placeholder="ex.: ponto solicitado pelo cliente">${esc(cp.observacoes)}</textarea></div>
-      <div class="cartao"><h2>Tempo de calibração</h2><div class="grade2"><label class="cp"><span>Minutos</span><input class="med" inputmode="numeric" data-campo-num="tempo_min" value="${cp.tempo_min ?? min}"></label><div class="faixa" style="margin-top:22px">Das ${cp.inicio.slice(11, 16)} às ${cp.fim.slice(11, 16)}</div></div></div>
-      <div class="cartao"><h2>Conferência</h2><div id="conf">${conferencia(inst)}</div></div>`;
+    h = `<section class="grupo"><h3>Condições ambientais no fim</h3><div class="form"><div class="grade3">${amb('t_fim', 'T (°C)', cp)}${amb('u_fim', 'UR (%)', cp)}${amb('p_fim', 'P (hPa)', cp)}</div><div class="msg" id="amb-msg" style="margin:-4px 0 12px"></div></div></section>
+      <section class="grupo"><h3>Observações</h3><div class="form"><label class="campo"><textarea data-campo="observacoes" rows="3" placeholder="ex.: ponto solicitado pelo cliente" aria-label="Observações">${esc(cp.observacoes)}</textarea></label></div></section>
+      <section class="grupo"><h3>Tempo de calibração</h3><div class="form"><div class="grade2"><label class="campo"><span>Minutos</span><input class="med" inputmode="numeric" data-campo-num="tempo_min" value="${cp.tempo_min ?? min}"></label><div class="campo"><span>Relógio do app</span><div style="min-height:46px;display:flex;align-items:center;color:var(--label2)">das ${cp.inicio.slice(11, 16)} às ${cp.fim.slice(11, 16)}</div></div></div></div></section>
+      <section class="grupo"><h3>Conferência</h3><div class="lista conf" id="conf" style="padding:2px 14px">${conferencia(inst)}</div></section>`;
   }
-  $('#tela').innerHTML = barra + h;
+  $('#tela').innerHTML = cab + h;
   ligaInstrumento(v, inst, p);
-  const passo = n => { rota = { ...rota, passo: n }; history.replaceState(rota, ''); desenha(); window.scrollTo(0, 0); };
-  const ant = p > 0 ? ['‹ Anterior', () => passo(p - 1), 'sec'] : null;
-  const prox = p < 4 ? ['Próximo ›', () => passo(p + 1)] : ['Concluir balança', () => { inst.situacao = 'pronto'; salvar(); toast('Balança concluída'); history.back(); }];
+  const passo = n => { rota = { ...rota, passo: n }; direcao = n > p ? 'push' : 'volta'; history.replaceState(rota, ''); desenha(); window.scrollTo(0, 0); };
+  const ant = p > 0 ? ['Anterior', () => passo(p - 1), 'cinza'] : null;
+  const prox = p < 4 ? ['Próximo', () => passo(p + 1)] : ['Concluir', () => { inst.situacao = 'pronto'; salvar(); toast('Balança concluída'); history.back(); }, '', 'ok'];
   rodape([ant, prox].filter(Boolean));
 }
-function amb(k, r, cp) { return `<label class="cp"><span>${r}</span><input class="med" inputmode="decimal" data-campo-num="${k}" value="${fmt(cp[k])}"></label>`; }
+function amb(k, r, cp) { return `<label class="campo"><span>${r}</span><input class="med" inputmode="decimal" data-campo-num="${k}" value="${fmt(cp[k])}"></label>`; }
 function fmtN(v) { return v == null ? '' : (+v).toFixed(8).replace(/0+$/, '').replace(/\.$/, '').replace('.', ','); }
 function padroesHTML(cp) {
   const lista = db.perfil.padroes;
-  if (!lista.length) return '<div class="vazio">Nenhum padrão no celular. Eles chegam com a ordem do PCP.</div>';
+  if (!lista.length) return `<div class="lista"><div class="vazio">${ico('peso')}<br>Nenhum padrão no celular.<br>Eles chegam com a ordem do PCP.</div></div>`;
   const usados = lista.filter(x => cp.padroes_usados.includes(x.codigo)), outros = lista.filter(x => !cp.padroes_usados.includes(x.codigo));
   const cartao = x => {
     const s = situacaoPadrao(x, cp.data_calibracao);
-    const tab = x.pesos ? `<details class="tabpesos"><summary>${Object.keys(x.pesos).length} pesos no certificado (${esc(x.unidade_pesos || '')})</summary><table class="resumo"><tr><th>Nominal</th><th>VC</th><th>uest</th><th>upad</th></tr>${Object.entries(x.pesos).map(([n, t]) => `<tr><td>${fmtN(n)}</td><td>${fmtN(t.vc)}</td><td>${fmtN(t.uest)}</td><td>${fmtN(t.upad)}</td></tr>`).join('')}</table></details>` : '';
-    return `<div class="padsel"><div class="top"><b>${esc(x.codigo)}</b><span>${esc(x.descricao)}</span><button class="mini" data-tirar="${esc(x.codigo)}">Tirar</button></div>
-      <small>Cert. ${esc(x.certificado)} · ${esc(x.organismo)}</small><br><small class="${s.cls}">${s.txt}</small>${tab}</div>`;
+    return `<div class="padsel"><div class="top"><div><b>${esc(x.codigo)}</b> <span class="pill ${s.pill}">${s.curto}</span><span class="desc">${esc(x.descricao)}</span><small>Cert. ${esc(x.certificado)} · ${esc(x.organismo)}</small><small class="${s.cls}">${s.txt}</small></div><button class="mini" data-tirar="${esc(x.codigo)}">Tirar</button></div>${tabelaPesos(x)}</div>`;
   };
-  return (usados.map(cartao).join('') || '<div class="msg erro" style="margin:0 0 10px">Nenhum padrão marcado.</div>') +
-    (outros.length ? `<select data-addpad><option value="">+ Adicionar padrão…</option>${outros.map(x => `<option value="${esc(x.codigo)}">${esc(x.codigo)} · ${esc(x.descricao)}</option>`).join('')}</select>` : '');
+  return `<div class="lista">${usados.map(cartao).join('') || `<div class="padsel"><div class="msg erro" style="margin:0">${ico('erro')}<span>Nenhum padrão marcado.</span></div></div>`}</div>` +
+    (outros.length ? `<div class="form" style="margin-top:10px;padding:12px 12px 0"><select data-addpad aria-label="Adicionar padrão"><option value="">Adicionar padrão…</option>${outros.map(x => `<option value="${esc(x.codigo)}">${esc(x.codigo)} · ${esc(x.descricao)}</option>`).join('')}</select></div>` : '');
 }
 // procura o peso nos padrões marcados: pelo nominal exato ou pelo VC (±0,1 %), só na mesma unidade da balança
 function pesoDoPadrao(cp, cd, valor) {
@@ -423,13 +656,15 @@ function temJogoDePesos(cp, cd) { const un = cd.unidade || 'g'; return db.perfil
 function linhaPeso(t, un) { return `${t.codigo} · peso ${fmtN(t.nominal)} ${un}: VC ${fmtN(t.vc)} · uest ${fmtN(t.uest)} · upad ${fmtN(t.upad)}`; }
 function novoPonto() { return { nominal: null, vc: null, m1_antes: null, depois: [null, null, null, null, null] }; }
 function pontoHTML(pt, i, cd, rt) {
-  const inp = (attr, v, cls = '') => `<input class="med ${cls}" inputmode="decimal" ${attr} value="${fmt(v)}">`;
+  const inp = (attr, v, rot) => `<input class="med" inputmode="decimal" ${attr} value="${fmt(v)}" aria-label="${rot}">`;
   const k = rt === 'VC' ? 'vc' : 'nominal';
-  return `<div class="ponto" data-i="${i}"><div class="top"><b>Ponto ${i + 1}</b><button class="mini" data-igual-pt="${i}">= VM</button><button class="mini" data-del-pt="${i}">✕</button></div>
-    <div class="grade3"><div><div class="rot">${rt || 'VN'}</div>${inp(`data-pt="${i}" data-k="${k}"`, pt[k])}</div><div><div class="rot">VM antes</div>${inp(`data-pt="${i}" data-k="m1_antes"`, pt.m1_antes)}</div><div><div class="rot">VM depois</div>${inp(`data-pt="${i}" data-dep="0"`, pt.depois[0])}</div></div>
-    <div class="rot">Repetições depois do ajuste: M2 a M5</div><div class="leit" style="grid-template-columns:repeat(4,1fr)">${pt.depois.slice(1).map((x, j) => inp(`data-pt="${i}" data-dep="${j + 1}"`, x)).join('')}</div>
-    <div class="msg" data-msg="${i}"></div></div>`;
+  return `<div class="ponto" data-i="${i}"><div class="top"><b>Ponto ${i + 1}</b><button class="mini" data-igual-pt="${i}">${ico('repetir')}= VM</button><button class="mini icone" data-del-pt="${i}" aria-label="Apagar ponto ${i + 1}">${ico('lixo')}</button></div>
+    <div class="grade3"><label class="campo"><span>${rt || 'VN'}</span>${inp(`data-pt="${i}" data-k="${k}"`, pt[k], (rt || 'VN') + ' do ponto ' + (i + 1))}</label><label class="campo"><span>VM antes</span>${inp(`data-pt="${i}" data-k="m1_antes"`, pt.m1_antes, 'VM antes do ajuste, ponto ' + (i + 1))}</label><label class="campo"><span>VM depois</span>${inp(`data-pt="${i}" data-dep="0"`, pt.depois[0], 'VM depois do ajuste, ponto ' + (i + 1))}</label></div>
+    <div class="rot">Repetições depois do ajuste · M2 a M5</div><div class="leit">${pt.depois.slice(1).map((x, j) => inp(`data-pt="${i}" data-dep="${j + 1}"`, x, `M${j + 2} do ponto ${i + 1}`)).join('')}</div>
+    <div data-msg="${i}"></div></div>`;
 }
+const MSG_ICO = { erro: 'erro', aviso: 'alerta', ok: 'ok', info: 'info' };
+const msgHTML = (c, t) => `<div class="msg ${c}">${ico(MSG_ICO[c] || 'info')}<span>${t}</span></div>`;
 
 // avaliação de um ponto, na hora
 function avaliaPonto(pt, i, pts, cd, cp) {
@@ -444,7 +679,7 @@ function avaliaPonto(pt, i, pts, cd, cp) {
   const un = esc(cd.unidade || 'g');
   const tab = cp ? pesoDoPadrao(cp, cd, pt.vc ?? pt.nominal) : null;
   if (tab) out.msgs.push(['info', linhaPeso(tab, un)]);
-  else if (cp && (pt.vc ?? pt.nominal) != null) out.msgs.push(['aviso', temJogoDePesos(cp, cd) ? 'Peso não encontrado no certificado dos padrões marcados: o laboratório completa VC e incertezas.' : 'Nenhum jogo de pesos marcado na tela de início: VC e incertezas ficam para o laboratório.']);
+  else if (cp && (pt.vc ?? pt.nominal) != null) out.msgs.push(['aviso', temJogoDePesos(cp, cd) ? 'Peso não encontrado no certificado dos padrões marcados: o laboratório completa VC e incertezas.' : 'Nenhum jogo de pesos marcado no início: VC e incertezas ficam para o laboratório.']);
   const ref = pt.vc ?? tab?.vc ?? pt.nominal;
   if (ref != null && lidas.length) {
     const m = lidas.reduce((s, x) => s + x, 0) / lidas.length, ei = m - ref;
@@ -460,7 +695,7 @@ function atualizaPontos(inst) {
   pts.forEach((pt, i) => {
     const a = avaliaPonto(pt, i, pts, inst.cadastro, inst.campo);
     document.querySelectorAll(`[data-pt="${i}"][data-dep]`).forEach(el => el.classList.toggle('destoa', a.destoa.includes(+el.dataset.dep)));
-    const m = document.querySelector(`[data-msg="${i}"]`); if (m) m.innerHTML = a.msgs.map(([c, t]) => `<div class="msg ${c}">${t}</div>`).join('');
+    const m = document.querySelector(`[data-msg="${i}"]`); if (m) m.innerHTML = a.msgs.map(([c, t]) => msgHTML(c, t)).join('');
   });
 }
 
@@ -483,12 +718,14 @@ function ligaInstrumento(v, inst, p) {
     if (p === 4) { atualizaAmb(cp); $('#conf').innerHTML = conferencia(inst); }
   };
   tela.onclick = e => {
-    const d = e.target.dataset;
+    // o toque pode cair no ícone dentro do botão: sobe até o elemento com a ação
+    const alvo = e.target.closest('[data-reftipo],[data-tirar],[data-igual-pt],[data-del-pt],[data-igual],#nao-cal,#add-pt') || e.target;
+    const d = alvo.dataset;
     if (d.reftipo && d.reftipo !== (cp.ref_tipo || 'VN')) { const para = d.reftipo === 'VC' ? 'vc' : 'nominal', de = para === 'vc' ? 'nominal' : 'vc'; cp.pontos.forEach(pt => { if (pt[para] == null) pt[para] = pt[de]; pt[de] = null; }); cp.ref_tipo = d.reftipo; salvar(); return telaInstrumento(); }
     if (d.tirar) { cp.padroes_usados = cp.padroes_usados.filter(c => c !== d.tirar); salvar(); return telaInstrumento(); }
-    if (e.target.id === 'nao-cal') { const m = prompt('Motivo (vai para as observações):'); if (m) { inst.situacao = 'nao_calibrado'; cp.observacoes = m; salvar(); history.back(); } }
-    if (e.target.id === 'add-pt') { const ult = cp.pontos[cp.pontos.length - 1]; cp.pontos.push(novoPonto()); salvar(); telaInstrumento(); const ins = document.querySelectorAll(`[data-pt="${cp.pontos.length - 1}"][data-k="nominal"]`)[0]; ins && ins.focus(); }
-    if (d.igualPt != null) { const pt = cp.pontos[+d.igualPt]; const b = pt.depois[0] ?? pt.m1_antes; if (b == null) return toast('Digite M1 primeiro'); pt.depois = pt.depois.map(x => x ?? b); salvar(); telaInstrumento(); }
+    if (alvo.id === 'nao-cal') { const m = prompt('Motivo (vai para as observações):'); if (m) { inst.situacao = 'nao_calibrado'; cp.observacoes = m; salvar(); history.back(); } }
+    if (alvo.id === 'add-pt') { cp.pontos.push(novoPonto()); salvar(); telaInstrumento(); const ins = document.querySelector(`[data-pt="${cp.pontos.length - 1}"][data-k]`); if (ins) { ins.scrollIntoView({ block: 'center' }); ins.focus({ preventScroll: true }); } }
+    if (d.igualPt != null) { const pt = cp.pontos[+d.igualPt]; const b = pt.depois[0] ?? pt.m1_antes; if (b == null) return toast('Digite o VM primeiro'); pt.depois = pt.depois.map(x => x ?? b); salvar(); telaInstrumento(); }
     if (d.delPt != null) { if (confirm(`Apagar o ponto ${+d.delPt + 1}?`)) { cp.pontos.splice(+d.delPt, 1); salvar(); telaInstrumento(); } }
     if (d.igual) { const a = cp.excentricidade[d.igual]; if (a[0] == null) return toast('Digite a posição 1 primeiro'); for (let i = 0; i < 5; i++) a[i] = a[i] ?? a[0]; salvar(); telaInstrumento(); }
   };
@@ -499,43 +736,41 @@ function ligaInstrumento(v, inst, p) {
 function atualizaExc(inst) {
   const e = inst.campo.excentricidade, cd = inst.cadastro, casas = casasDe(cd.divisao) ?? 4, m = $('#exc-msg'); if (!m) return;
   const ep = $('#exc-peso'), carga = e.vc ?? e.nominal, t = pesoDoPadrao(inst.campo, cd, carga);
-  if (ep) { ep.className = 'msg ' + (t ? 'info' : carga != null ? 'aviso' : ''); ep.textContent = t ? linhaPeso(t, cd.unidade || 'g') : carga != null ? 'Peso não encontrado nos padrões marcados.' : ''; }
+  if (ep) ep.outerHTML = t ? `<div id="exc-peso" style="margin:-4px 0 12px">${msgHTML('info', linhaPeso(t, cd.unidade || 'g'))}</div>` : carga != null ? `<div id="exc-peso" style="margin:-4px 0 12px">${msgHTML('aviso', 'Peso não encontrado nos padrões marcados.')}</div>` : `<div id="exc-peso"></div>`;
   const d = e.depois.filter(x => x != null);
-  if (d.length < 5) { m.className = 'msg aviso'; m.textContent = `${5 - d.length} posição(ões) faltando.`; return; }
-  const dif = Math.max(...d) - Math.min(...d);
-  m.className = 'msg ok'; m.textContent = `Maior diferença entre posições: ${fmt(dif, casas)} ${cd.unidade || 'g'}`;
+  m.outerHTML = d.length < 5 ? `<div id="exc-msg">${msgHTML('aviso', plural(5 - d.length, 'posição faltando', 'posições faltando') + '.')}</div>` : `<div id="exc-msg">${msgHTML('ok', `Maior diferença entre posições: ${fmt(Math.max(...d) - Math.min(...d), casas)} ${cd.unidade || 'g'}`)}</div>`;
 }
 function atualizaAmb(cp) {
   const m = $('#amb-msg'); if (!m) return;
   const dt = cp.t_fim != null && cp.t_inicio != null ? Math.abs(cp.t_fim - cp.t_inicio) : null;
-  m.className = 'msg ' + (dt != null && dt > 2 ? 'aviso' : 'ok');
-  m.textContent = dt == null ? '' : `Variação de temperatura durante a calibração: ${fmt(dt, 1)} °C${dt > 2 ? '. Registre nas observações.' : ''}`;
+  m.innerHTML = dt == null ? '' : msgHTML(dt > 2 ? 'aviso' : 'ok', `Variação de temperatura: ${fmt(dt, 1)} °C${dt > 2 ? '. Registre nas observações.' : ''}`);
+  m.style.display = dt == null ? 'none' : '';
 }
 function conferencia(inst) {
   const cp = inst.campo, cd = inst.cadastro, lin = [];
-  const add = (c, t) => lin.push(`<div class="msg ${c}">${c === 'ok' ? '✔' : c === 'aviso' ? '△' : '✖'} ${t}</div>`);
+  const add = (c, t) => lin.push(msgHTML(c, t));
   ['t_inicio', 'u_inicio', 'p_inicio', 't_fim', 'u_fim', 'p_fim'].some(k => cp[k] == null) ? add('erro', 'Condições ambientais incompletas.') : add('ok', 'Ambiente de início e fim registrado.');
   const pads = db.perfil.padroes.filter(x => cp.padroes_usados.includes(x.codigo));
   if (!pads.length) add('erro', 'Nenhum padrão marcado.');
   pads.forEach(x => { const s = situacaoPadrao(x, cp.data_calibracao); if (s.nivel) add(s.nivel === 2 ? 'erro' : 'aviso', `${x.codigo}: ${s.txt}`); });
-  if (pads.length && pads.every(x => !situacaoPadrao(x, cp.data_calibracao).nivel)) add('ok', `${pads.length} padrão(ões) válidos na data.`);
+  if (pads.length && pads.every(x => !situacaoPadrao(x, cp.data_calibracao).nivel)) add('ok', `${plural(pads.length, 'padrão válido', 'padrões válidos')} na data.`);
   const pts = cp.pontos.filter(pt => pt.depois.some(x => x != null));
   if (!pts.length) add('erro', 'Nenhum ponto de carga medido.');
   else {
     let problemas = 0; pts.forEach((pt, i) => { const a = avaliaPonto(pt, i, pts, cd, cp); const n = pt.depois.filter(x => x != null).length; if (a.destoa.length || (n > 1 && n < 5)) problemas++; });
-    problemas ? add('aviso', `${problemas} ponto(s) com leitura destoante ou repetições pela metade.`) : add('ok', `${pts.length} ponto(s) medidos.`);
-    const soVM = pts.filter(pt => pt.depois.filter(x => x != null).length === 1).length; if (soVM) add('aviso', `${soVM} ponto(s) só com VM, sem as repetições M2 a M5.`);
-    const semVC = pts.filter(pt => pt.vc == null).length; if (semVC) add('aviso', `${semVC} ponto(s) sem VC: o laboratório completa.`);
+    problemas ? add('aviso', `${plural(problemas, 'ponto', 'pontos')} com leitura destoante ou repetições pela metade.`) : add('ok', `${plural(pts.length, 'ponto medido', 'pontos medidos')}.`);
+    const soVM = pts.filter(pt => pt.depois.filter(x => x != null).length === 1).length; if (soVM) add('aviso', `${plural(soVM, 'ponto', 'pontos')} só com VM, sem as repetições M2 a M5.`);
+    const semVC = pts.filter(pt => pt.vc == null && !pesoDoPadrao(cp, cd, pt.nominal)).length; if (semVC) add('aviso', `${plural(semVC, 'ponto', 'pontos')} sem VC: o laboratório completa.`);
   }
   cp.excentricidade.depois.filter(x => x != null).length === 5 ? add('ok', 'Excentricidade nas 5 posições.') : add('aviso', 'Excentricidade incompleta.');
-  if (!cd.n_metrologico) add('aviso', 'Sem nº metrológico.');
+  if (!cd.n_metrologico) add('aviso', 'Sem tag (nº metrológico).');
   return lin.join('');
 }
 
 // ---------- envio ----------
 async function enviar(v) {
   const faltam = v.instrumentos.filter(i => !['pronto', 'nao_calibrado'].includes(i.situacao));
-  if (faltam.length && !confirm(`${faltam.length} instrumento(s) ainda não concluído(s). Enviar assim mesmo?`)) return;
+  if (faltam.length && !confirm(`${plural(faltam.length, 'instrumento ainda não concluído', 'instrumentos ainda não concluídos')}. Enviar assim mesmo?`)) return;
   if (!db.perfil.nome) { toast('Cadastre seu nome no perfil'); return ir({ tela: 'perfil' }); }
   const pacote = {
     versao: 1, visita_id: v.id, os: v.os, enviado: agoraISO(), cliente: v.cliente,
@@ -547,7 +782,7 @@ async function enviar(v) {
   try {
     if (navigator.canShare && navigator.canShare({ files: [arq] })) await navigator.share({ files: [arq], title: nome });
     else { const a = document.createElement('a'); a.href = URL.createObjectURL(arq); a.download = nome; a.click(); }
-    v.enviada = agoraISO(); salvar(); telaVisita(); toast('Arquivo pronto');
+    v.enviada = agoraISO(); salvar(); desenha(); toast('Arquivo pronto');
   } catch (e) { if (e.name !== 'AbortError') toast('Não consegui compartilhar: ' + e.message); }
 }
 
